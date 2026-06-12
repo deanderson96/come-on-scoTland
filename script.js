@@ -3,16 +3,13 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v5",
+  cacheKey: "scotland-2026-world-cup-cache-v6",
   cacheMinutes: 5,
   refreshMinutes: 5,
   timeoutMs: 10000,
   timeZone: "Europe/London",
-
-  // TheSportsDB World Cup kick-off records are currently displaying one hour behind
-  // the published UK schedule, so all visible fixture times are shifted forward here.
-  displayOffsetMinutes: 60,
-  roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
+  roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1),
+  groupNames: Array.from({ length: 12 }, (_, index) => `Group ${String.fromCharCode(65 + index)}`)
 };
 
 const els = {
@@ -261,6 +258,8 @@ function uniqueEvents(events) {
 }
 
 function isSeasonEvent(event) {
+  if (clean(event.strSeason) === CONFIG.season) return true;
+
   const date = kickoffDate(event);
 
   if (!date) {
@@ -274,15 +273,29 @@ function mapEvent(event) {
   const parsedTeams = parseTeamsFromEventName(event.strEvent || event.strEventAlternate || "");
   const home = clean(event.strHomeTeam) || parsedTeams.home || clean(event.strEvent) || "Fixture TBC";
   const away = clean(event.strAwayTeam) || parsedTeams.away || "Opponent TBC";
-  const stage = stageName(event);
-  const group = groupName([event.strGroup, event.strRound, event.strStage, event.strEvent].join(" "));
-  const phase = isKnockoutStage(stage) ? "knockout" : "group";
+  const group = groupName([
+    event.strGroup,
+    event.strRound,
+    event.strStage,
+    event.strEvent,
+    event.strEventAlternate,
+    event.strDescriptionEN,
+    event.strDescription
+  ].join(" "));
+  const stage = group || stageName(event);
+  const phase = isKnockoutStage([
+    stage,
+    event.strRound,
+    event.strStage,
+    event.strEvent,
+    event.strEventAlternate
+  ].join(" ")) ? "knockout" : "group";
   const matchScore = score(event);
 
   return {
     id: clean(event.idEvent) || `${home}-${away}-${event.dateEvent}-${event.strTime}`,
     phase,
-    stage: group || stage,
+    stage,
     group,
     home,
     away,
@@ -339,31 +352,55 @@ function mapTableRow(row) {
 
 function buildGroups(fixtures, tableRows) {
   const groups = new Map();
+  const unlabelledFixtures = [];
+
+  CONFIG.groupNames.forEach((name) => {
+    groups.set(name, new Map());
+  });
 
   fixtures
     .filter((match) => match.phase === "group")
+    .filter((match) => isRealTeam(match.home) && isRealTeam(match.away))
     .forEach((match) => {
-      const name = match.group || match.stage;
-      if (!/^Group\s+[A-L]$/i.test(name)) return;
+      const explicitGroup = groupName(match.group || match.stage);
 
-      if (!groups.has(name)) {
-        groups.set(name, new Map());
+      if (explicitGroup) {
+        addBlank(groups.get(explicitGroup), match.home);
+        addBlank(groups.get(explicitGroup), match.away);
+      } else {
+        unlabelledFixtures.push(match);
       }
-
-      addBlank(groups.get(name), match.home);
-      addBlank(groups.get(name), match.away);
     });
 
-  tableRows.forEach((row) => {
-    const name = row.group || findGroup(groups, row.team);
-    if (!name) return;
+  tableRows
+    .filter((row) => row.group)
+    .forEach((row) => {
+      if (!groups.has(row.group)) {
+        groups.set(row.group, new Map());
+      }
 
-    if (!groups.has(name)) {
-      groups.set(name, new Map());
-    }
+      groups.get(row.group).set(row.team, { ...blankStanding(row.team), ...row });
+    });
 
-    groups.get(name).set(row.team, { ...blankStanding(row.team), ...row });
+  connectedTeamGroups(unlabelledFixtures).forEach((component) => {
+    const existingGroup = findGroupForAnyTeam(groups, component.teams);
+    const targetGroup = existingGroup || nextAvailableGroup(groups);
+
+    if (!targetGroup) return;
+
+    component.teams.forEach((team) => {
+      addBlank(groups.get(targetGroup), team);
+    });
   });
+
+  tableRows
+    .filter((row) => !row.group)
+    .forEach((row) => {
+      const name = findGroup(groups, row.team);
+      if (!name) return;
+
+      groups.get(name).set(row.team, { ...blankStanding(row.team), ...row });
+    });
 
   return [...groups.entries()]
     .map(([name, teams]) => ({
@@ -373,15 +410,100 @@ function buildGroups(fixtures, tableRows) {
     .sort((a, b) => orderGroup(a.name) - orderGroup(b.name));
 }
 
+function connectedTeamGroups(fixtures) {
+  const graph = new Map();
+  const earliestKickoff = new Map();
+
+  fixtures.forEach((match) => {
+    addEdge(graph, match.home, match.away);
+    addEdge(graph, match.away, match.home);
+
+    [match.home, match.away].forEach((team) => {
+      const current = earliestKickoff.get(team) || Number.MAX_SAFE_INTEGER;
+      const matchTime = match.kickoff ? match.kickoff.getTime() : Number.MAX_SAFE_INTEGER;
+      earliestKickoff.set(team, Math.min(current, matchTime));
+    });
+  });
+
+  const visited = new Set();
+  const components = [];
+
+  graph.forEach((_, team) => {
+    if (visited.has(team)) return;
+
+    const stack = [team];
+    const component = [];
+    let firstKickoff = Number.MAX_SAFE_INTEGER;
+
+    visited.add(team);
+
+    while (stack.length) {
+      const current = stack.pop();
+      component.push(current);
+      firstKickoff = Math.min(firstKickoff, earliestKickoff.get(current) || Number.MAX_SAFE_INTEGER);
+
+      graph.get(current).forEach((next) => {
+        if (visited.has(next)) return;
+        visited.add(next);
+        stack.push(next);
+      });
+    }
+
+    if (component.length) {
+      components.push({
+        teams: component.sort((a, b) => a.localeCompare(b)),
+        firstKickoff
+      });
+    }
+  });
+
+  return components.sort((a, b) => {
+    if (a.firstKickoff !== b.firstKickoff) return a.firstKickoff - b.firstKickoff;
+    return a.teams[0].localeCompare(b.teams[0]);
+  });
+}
+
+function addEdge(graph, from, to) {
+  if (!graph.has(from)) {
+    graph.set(from, new Set());
+  }
+
+  graph.get(from).add(to);
+}
+
+function nextAvailableGroup(groups) {
+  return CONFIG.groupNames.find((name) => {
+    const teams = groups.get(name);
+    return teams && teams.size === 0;
+  }) || "";
+}
+
+function findGroupForAnyTeam(groups, teamNames) {
+  for (const team of teamNames) {
+    const group = findGroup(groups, team);
+    if (group) return group;
+  }
+
+  return "";
+}
+
 function addBlank(group, team) {
+  if (!group || !team) return;
+
   if (!group.has(team)) {
     group.set(team, blankStanding(team));
   }
 }
 
 function findGroup(groups, team) {
+  const normalisedTeam = clean(team).toLowerCase();
+
   for (const [name, teams] of groups.entries()) {
-    if (teams.has(team)) return name;
+    for (const existingTeam of teams.keys()) {
+      if (clean(existingTeam).toLowerCase() === normalisedTeam) {
+        return name;
+      }
+    }
   }
 
   return "";
@@ -479,7 +601,15 @@ function renderGroups() {
     return;
   }
 
-  els.groupsGrid.innerHTML = state.groups.map((group) => `
+  els.groupsGrid.innerHTML = state.groups.map(renderGroupCard).join("");
+}
+
+function renderGroupCard(group) {
+  const body = group.teams.length
+    ? group.teams.map(renderGroupRow).join("")
+    : `<tr><td class="group-empty" colspan="7">Awaiting API group teams</td></tr>`;
+
+  return `
     <article class="group-card">
       <div class="group-header">
         <span class="group-label">${escapeHtml(group.name)}</span>
@@ -498,9 +628,9 @@ function renderGroups() {
             <th scope="col">Pts</th>
           </tr>
         </thead>
-        <tbody>${group.teams.map(renderGroupRow).join("")}</tbody>
+        <tbody>${body}</tbody>
       </table>
-    </article>`).join("");
+    </article>`;
 }
 
 function renderGroupRow(row) {
@@ -544,7 +674,7 @@ function renderHero(fixtures) {
 
   const now = Date.now();
   const next = fixtures.find((match) => {
-    return isScotland(match) && match.kickoff && displayDate(match.kickoff).getTime() >= now;
+    return isScotland(match) && match.kickoff && match.kickoff.getTime() >= now;
   });
 
   const latest = [...fixtures].reverse().find((match) => isScotland(match));
@@ -632,26 +762,19 @@ function hasTimeZoneSuffix(value) {
   return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(clean(value));
 }
 
-function displayDate(date) {
-  if (!date) return null;
-  return new Date(date.getTime() + CONFIG.displayOffsetMinutes * 60 * 1000);
-}
-
 function shortDate(date) {
-  const shownDate = displayDate(date);
-  if (!shownDate) return "Date TBC";
+  if (!date) return "Date TBC";
 
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: CONFIG.timeZone,
     weekday: "short",
     day: "2-digit",
     month: "short"
-  }).format(shownDate);
+  }).format(date);
 }
 
 function kickoffTime(date) {
-  const shownDate = displayDate(date);
-  if (!shownDate) return "Time TBC";
+  if (!date) return "Time TBC";
 
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: CONFIG.timeZone,
@@ -660,7 +783,7 @@ function kickoffTime(date) {
     hour12: true,
     timeZoneName: "short"
   })
-    .format(shownDate)
+    .format(date)
     .replace(" am", "am")
     .replace(" pm", "pm");
 }
@@ -758,14 +881,22 @@ function isKnockoutStage(stage) {
   return /round of 32|round of 16|last 16|quarter|semi|bronze|third place|third-place|final/i.test(stage);
 }
 
+function isRealTeam(team) {
+  const value = clean(team).toLowerCase();
+
+  if (!value) return false;
+
+  return !/\b(winner|winners|runner|runners|third|match|tbc|group\s+[a-l])\b/i.test(value);
+}
+
 function isScotland(match) {
   return clean(match.home).toLowerCase() === "scotland" ||
     clean(match.away).toLowerCase() === "scotland";
 }
 
 function sortMatches(a, b) {
-  return (a.kickoff ? displayDate(a.kickoff).getTime() : Number.MAX_SAFE_INTEGER) -
-    (b.kickoff ? displayDate(b.kickoff).getTime() : Number.MAX_SAFE_INTEGER);
+  return (a.kickoff ? a.kickoff.getTime() : Number.MAX_SAFE_INTEGER) -
+    (b.kickoff ? b.kickoff.getTime() : Number.MAX_SAFE_INTEGER);
 }
 
 function sortStandings(a, b) {
