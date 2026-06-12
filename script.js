@@ -1,59 +1,18 @@
 const SITE_LAST_UPDATED = "2026-06-12T12:00:00+01:00";
 
 const GROUPS = [
-  {
-    name: "Group A",
-    teams: [
-      { team: "Mexico", w: 1, d: 0, l: 0, gf: 2, ga: 0, pts: 3 },
-      { team: "South Korea", w: 1, d: 0, l: 0, gf: 2, ga: 1, pts: 3 },
-      { team: "Czechia", w: 0, d: 0, l: 1, gf: 1, ga: 2, pts: 0 },
-      { team: "South Africa", w: 0, d: 0, l: 1, gf: 0, ga: 2, pts: 0 }
-    ]
-  },
-  {
-    name: "Group B",
-    teams: ["Canada", "Bosnia & Herzegovina", "Qatar", "Switzerland"].map(blankTeam)
-  },
-  {
-    name: "Group C",
-    teams: ["Brazil", "Morocco", "Haiti", "Scotland"].map(blankTeam)
-  },
-  {
-    name: "Group D",
-    teams: ["United States", "Paraguay", "Australia", "Türkiye"].map(blankTeam)
-  },
-  {
-    name: "Group E",
-    teams: ["Germany", "Curaçao", "Ivory Coast", "Ecuador"].map(blankTeam)
-  },
-  {
-    name: "Group F",
-    teams: ["Netherlands", "Japan", "Sweden", "Tunisia"].map(blankTeam)
-  },
-  {
-    name: "Group G",
-    teams: ["Belgium", "Egypt", "Iran", "New Zealand"].map(blankTeam)
-  },
-  {
-    name: "Group H",
-    teams: ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"].map(blankTeam)
-  },
-  {
-    name: "Group I",
-    teams: ["France", "Senegal", "Iraq", "Norway"].map(blankTeam)
-  },
-  {
-    name: "Group J",
-    teams: ["Argentina", "Algeria", "Austria", "Jordan"].map(blankTeam)
-  },
-  {
-    name: "Group K",
-    teams: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"].map(blankTeam)
-  },
-  {
-    name: "Group L",
-    teams: ["England", "Croatia", "Ghana", "Panama"].map(blankTeam)
-  }
+  { name: "Group A", teams: ["Mexico", "South Korea", "Czechia", "South Africa"].map(blankTeam) },
+  { name: "Group B", teams: ["Canada", "Bosnia & Herzegovina", "Qatar", "Switzerland"].map(blankTeam) },
+  { name: "Group C", teams: ["Brazil", "Morocco", "Haiti", "Scotland"].map(blankTeam) },
+  { name: "Group D", teams: ["United States", "Paraguay", "Australia", "Türkiye"].map(blankTeam) },
+  { name: "Group E", teams: ["Germany", "Curaçao", "Ivory Coast", "Ecuador"].map(blankTeam) },
+  { name: "Group F", teams: ["Netherlands", "Japan", "Sweden", "Tunisia"].map(blankTeam) },
+  { name: "Group G", teams: ["Belgium", "Egypt", "Iran", "New Zealand"].map(blankTeam) },
+  { name: "Group H", teams: ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"].map(blankTeam) },
+  { name: "Group I", teams: ["France", "Senegal", "Iraq", "Norway"].map(blankTeam) },
+  { name: "Group J", teams: ["Argentina", "Algeria", "Austria", "Jordan"].map(blankTeam) },
+  { name: "Group K", teams: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"].map(blankTeam) },
+  { name: "Group L", teams: ["England", "Croatia", "Ghana", "Panama"].map(blankTeam) }
 ];
 
 const FIXTURES = [
@@ -221,7 +180,9 @@ function init() {
   setupFilters();
   setLastUpdated();
 
-  els.year.textContent = String(new Date().getFullYear());
+  if (els.year) {
+    els.year.textContent = String(new Date().getFullYear());
+  }
 
   renderFixtures("all");
   renderGroups();
@@ -246,9 +207,16 @@ function setupNavigation() {
 
 function setupFilters() {
   els.filterButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.classList.contains("is-active")));
+
     button.addEventListener("click", () => {
-      els.filterButtons.forEach((item) => item.classList.remove("is-active"));
+      els.filterButtons.forEach((item) => {
+        item.classList.remove("is-active");
+        item.setAttribute("aria-pressed", "false");
+      });
+
       button.classList.add("is-active");
+      button.setAttribute("aria-pressed", "true");
       renderFixtures(button.dataset.filter || "all");
     });
   });
@@ -272,7 +240,7 @@ function renderFixtures(filter) {
     return true;
   });
 
-  els.fixtureList.innerHTML = filtered
+  els.fixtureList.innerHTML = [...filtered]
     .sort((a, b) => sortByDateTime(a, b))
     .map(renderFixtureCard)
     .join("");
@@ -310,12 +278,15 @@ function renderFixtureCard(match) {
 }
 
 function renderGroups() {
-  els.groupsGrid.innerHTML = GROUPS.map((group) => {
+  const computedGroups = buildStandingsFromFixtures(GROUPS, FIXTURES);
+
+  els.groupsGrid.innerHTML = computedGroups.map((group) => {
     const rows = [...group.teams].sort((a, b) => {
       if (b.pts !== a.pts) return b.pts - a.pts;
       const gdDiff = goalDifference(b) - goalDifference(a);
       if (gdDiff !== 0) return gdDiff;
-      return b.gf - a.gf;
+      if (b.gf !== a.gf) return b.gf - a.gf;
+      return a.team.localeCompare(b.team);
     });
 
     return `
@@ -346,6 +317,57 @@ function renderGroups() {
   }).join("");
 }
 
+function buildStandingsFromFixtures(groups, fixtures) {
+  const tables = groups.map((group) => ({
+    name: group.name,
+    teams: group.teams.map((row) => blankTeam(row.team))
+  }));
+
+  const tablesByName = new Map(tables.map((group) => [group.name, group]));
+
+  fixtures
+    .filter((match) => match.phase === "group" && match.score)
+    .forEach((match) => {
+      const group = tablesByName.get(match.stage);
+      if (!group) return;
+
+      const [homeGoals, awayGoals] = parseScore(match.score);
+      if (!Number.isFinite(homeGoals) || !Number.isFinite(awayGoals)) return;
+
+      const home = group.teams.find((row) => row.team === match.home);
+      const away = group.teams.find((row) => row.team === match.away);
+      if (!home || !away) return;
+
+      home.gf += homeGoals;
+      home.ga += awayGoals;
+      away.gf += awayGoals;
+      away.ga += homeGoals;
+
+      if (homeGoals > awayGoals) {
+        home.w += 1;
+        home.pts += 3;
+        away.l += 1;
+      } else if (awayGoals > homeGoals) {
+        away.w += 1;
+        away.pts += 3;
+        home.l += 1;
+      } else {
+        home.d += 1;
+        away.d += 1;
+        home.pts += 1;
+        away.pts += 1;
+      }
+    });
+
+  return tables;
+}
+
+function parseScore(score) {
+  return String(score)
+    .split("-")
+    .map((value) => Number(value.trim()));
+}
+
 function renderGroupRow(row) {
   const played = row.w + row.d + row.l;
   const isScotland = row.team === "Scotland";
@@ -371,7 +393,7 @@ function renderGroupRow(row) {
 function renderKnockout() {
   const knockoutMatches = FIXTURES.filter((match) => match.phase === "knockout");
 
-  els.knockoutGrid.innerHTML = knockoutMatches
+  els.knockoutGrid.innerHTML = [...knockoutMatches]
     .sort((a, b) => sortByDateTime(a, b))
     .map((match) => `
       <article class="knockout-card">
