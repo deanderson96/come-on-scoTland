@@ -3,12 +3,12 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v6",
+  cacheKey: "scotland-2026-world-cup-cache-v7",
   cacheMinutes: 5,
   refreshMinutes: 5,
   timeoutMs: 10000,
   timeZone: "Europe/London",
-  roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1),
+  roundsToProbe: Array.from({ length: 20 }, (_, index) => index + 1),
   groupNames: Array.from({ length: 12 }, (_, index) => `Group ${String.fromCharCode(65 + index)}`)
 };
 
@@ -152,9 +152,11 @@ async function fetchTournamentData() {
       .filter(isSeasonEvent)
   );
 
-  const rawTable = tableResults
-    .filter((result) => result.status === "fulfilled")
-    .flatMap((result) => extractTable(result.value));
+  const rawTable = uniqueTableRows(
+    tableResults
+      .filter((result) => result.status === "fulfilled")
+      .flatMap((result) => extractTable(result.value))
+  );
 
   if (!rawEvents.length && !rawTable.length) {
     throw new Error("No tournament data returned");
@@ -257,6 +259,24 @@ function uniqueEvents(events) {
   });
 }
 
+function uniqueTableRows(rows) {
+  const map = new Map();
+
+  rows.forEach((row) => {
+    const mapped = mapTableRow(row);
+    if (!mapped) return;
+
+    const key = `${mapped.group || "ungrouped"}|${normalise(mapped.team)}`;
+    const current = map.get(key);
+
+    if (!current || mapped.played >= current.played || mapped.pts >= current.pts) {
+      map.set(key, row);
+    }
+  });
+
+  return [...map.values()];
+}
+
 function isSeasonEvent(event) {
   if (clean(event.strSeason) === CONFIG.season) return true;
 
@@ -333,44 +353,56 @@ function mapTableRow(row) {
   const team = clean(row.strTeam || row.name || row.team);
   if (!team) return null;
 
-  const gf = number(row.intGoalsFor ?? row.goalsfor ?? row.gf);
-  const ga = number(row.intGoalsAgainst ?? row.goalsagainst ?? row.ga);
+  const won = number(row.intWin ?? row.intWon ?? row.win ?? row.won);
+  const drawn = number(row.intDraw ?? row.draw ?? row.drawn);
+  const lost = number(row.intLoss ?? row.intLost ?? row.loss ?? row.lost);
+  const playedValue = number(row.intPlayed ?? row.played ?? row.pld);
+  const gf = number(row.intGoalsFor ?? row.goalsfor ?? row.goalsFor ?? row.gf ?? row.for);
+  const ga = number(row.intGoalsAgainst ?? row.goalsagainst ?? row.goalsAgainst ?? row.ga ?? row.against);
+  const gdValue = row.intGoalDifference ?? row.goalsdifference ?? row.goalDifference ?? row.gd;
+  const pts = number(row.intPoints ?? row.total ?? row.points ?? row.pts);
 
   return {
     team,
-    group: groupName(row.strGroup || row.strDescription || row.strLeague || row.strTable || ""),
-    played: number(row.intPlayed ?? row.played),
-    won: number(row.intWin ?? row.intWon ?? row.win),
-    drawn: number(row.intDraw ?? row.draw),
-    lost: number(row.intLoss ?? row.intLost ?? row.loss),
+    group: groupName([
+      row.strGroup,
+      row.strDescription,
+      row.strLeague,
+      row.strTable,
+      row.strRound,
+      row.description
+    ].join(" ")),
+    played: playedValue || won + drawn + lost,
+    won,
+    drawn,
+    lost,
     gf,
     ga,
-    gd: number(row.intGoalDifference ?? row.goalsdifference ?? row.gd ?? gf - ga),
-    pts: number(row.intPoints ?? row.total ?? row.points)
+    gd: gdValue === undefined || gdValue === null || gdValue === "" ? gf - ga : number(gdValue),
+    pts,
+    tableBacked: true
   };
 }
 
 function buildGroups(fixtures, tableRows) {
   const groups = new Map();
-  const unlabelledFixtures = [];
+  const extraRows = new Map();
+  const groupFixtures = fixtures
+    .filter((match) => match.phase === "group")
+    .filter((match) => isRealTeam(match.home) && isRealTeam(match.away));
 
   CONFIG.groupNames.forEach((name) => {
     groups.set(name, new Map());
   });
 
-  fixtures
-    .filter((match) => match.phase === "group")
-    .filter((match) => isRealTeam(match.home) && isRealTeam(match.away))
-    .forEach((match) => {
-      const explicitGroup = groupName(match.group || match.stage);
+  groupFixtures.forEach((match) => {
+    const explicitGroup = groupName(match.group || match.stage);
 
-      if (explicitGroup) {
-        addBlank(groups.get(explicitGroup), match.home);
-        addBlank(groups.get(explicitGroup), match.away);
-      } else {
-        unlabelledFixtures.push(match);
-      }
-    });
+    if (!explicitGroup) return;
+
+    mergeStanding(groups.get(explicitGroup), blankStanding(match.home));
+    mergeStanding(groups.get(explicitGroup), blankStanding(match.away));
+  });
 
   tableRows
     .filter((row) => row.group)
@@ -379,8 +411,12 @@ function buildGroups(fixtures, tableRows) {
         groups.set(row.group, new Map());
       }
 
-      groups.get(row.group).set(row.team, { ...blankStanding(row.team), ...row });
+      mergeStanding(groups.get(row.group), row);
     });
+
+  const unlabelledFixtures = groupFixtures.filter((match) => {
+    return !groupName(match.group || match.stage);
+  });
 
   connectedTeamGroups(unlabelledFixtures).forEach((component) => {
     const existingGroup = findGroupForAnyTeam(groups, component.teams);
@@ -389,25 +425,91 @@ function buildGroups(fixtures, tableRows) {
     if (!targetGroup) return;
 
     component.teams.forEach((team) => {
-      addBlank(groups.get(targetGroup), team);
+      mergeStanding(groups.get(targetGroup), blankStanding(team));
     });
   });
 
   tableRows
     .filter((row) => !row.group)
     .forEach((row) => {
-      const name = findGroup(groups, row.team);
-      if (!name) return;
+      const inferredGroup = findGroup(groups, row.team);
 
-      groups.get(name).set(row.team, { ...blankStanding(row.team), ...row });
+      if (inferredGroup) {
+        mergeStanding(groups.get(inferredGroup), row);
+      } else {
+        mergeStanding(extraRows, row);
+      }
     });
 
-  return [...groups.entries()]
-    .map(([name, teams]) => ({
-      name,
-      teams: [...teams.values()].sort(sortStandings)
-    }))
-    .sort((a, b) => orderGroup(a.name) - orderGroup(b.name));
+  applyDerivedResults(groups, groupFixtures);
+
+  const builtGroups = CONFIG.groupNames.map((name) => ({
+    name,
+    teams: [...(groups.get(name) || new Map()).values()].sort(sortStandings)
+  }));
+
+  if (extraRows.size) {
+    builtGroups.push({
+      name: "Additional API standings",
+      teams: [...extraRows.values()].sort(sortStandings)
+    });
+  }
+
+  return builtGroups;
+}
+
+function applyDerivedResults(groups, fixtures) {
+  const derived = new Map();
+
+  fixtures.forEach((match) => {
+    if (!match.score) return;
+
+    const group = groupName(match.group || match.stage) || sameTeamGroup(groups, match.home, match.away);
+    if (!group || !groups.has(group)) return;
+
+    const [homeScore, awayScore] = match.score.split("-").map(number);
+    if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return;
+
+    const bucket = derived.get(group) || new Map();
+    derived.set(group, bucket);
+
+    applyResult(bucket, match.home, homeScore, awayScore);
+    applyResult(bucket, match.away, awayScore, homeScore);
+  });
+
+  derived.forEach((rows, group) => {
+    const target = groups.get(group);
+    if (!target) return;
+
+    rows.forEach((row, team) => {
+      const existing = target.get(team);
+
+      if (!existing || !existing.tableBacked || existing.played === 0) {
+        target.set(team, { ...blankStanding(team), ...row });
+      }
+    });
+  });
+}
+
+function applyResult(rows, team, scored, conceded) {
+  const row = rows.get(team) || blankStanding(team);
+
+  row.played += 1;
+  row.gf += scored;
+  row.ga += conceded;
+  row.gd = row.gf - row.ga;
+
+  if (scored > conceded) {
+    row.won += 1;
+    row.pts += 3;
+  } else if (scored === conceded) {
+    row.drawn += 1;
+    row.pts += 1;
+  } else {
+    row.lost += 1;
+  }
+
+  rows.set(team, row);
 }
 
 function connectedTeamGroups(fixtures) {
@@ -487,20 +589,49 @@ function findGroupForAnyTeam(groups, teamNames) {
   return "";
 }
 
-function addBlank(group, team) {
-  if (!group || !team) return;
+function sameTeamGroup(groups, home, away) {
+  const homeGroup = findGroup(groups, home);
+  const awayGroup = findGroup(groups, away);
+  return homeGroup && homeGroup === awayGroup ? homeGroup : "";
+}
 
-  if (!group.has(team)) {
-    group.set(team, blankStanding(team));
+function mergeStanding(group, row) {
+  if (!group || !row || !row.team) return;
+
+  const key = findTeamKey(group, row.team) || row.team;
+  const existing = group.get(key);
+
+  if (!existing) {
+    group.set(row.team, { ...blankStanding(row.team), ...row });
+    return;
   }
+
+  group.set(key, {
+    ...existing,
+    ...row,
+    team: existing.team || row.team,
+    tableBacked: existing.tableBacked || row.tableBacked
+  });
+}
+
+function findTeamKey(group, team) {
+  const target = normalise(team);
+
+  for (const key of group.keys()) {
+    if (normalise(key) === target) {
+      return key;
+    }
+  }
+
+  return "";
 }
 
 function findGroup(groups, team) {
-  const normalisedTeam = clean(team).toLowerCase();
+  const normalisedTeam = normalise(team);
 
   for (const [name, teams] of groups.entries()) {
     for (const existingTeam of teams.keys()) {
-      if (clean(existingTeam).toLowerCase() === normalisedTeam) {
+      if (normalise(existingTeam) === normalisedTeam) {
         return name;
       }
     }
@@ -519,7 +650,8 @@ function blankStanding(team) {
     gf: 0,
     ga: 0,
     gd: 0,
-    pts: 0
+    pts: 0,
+    tableBacked: false
   };
 }
 
@@ -607,13 +739,13 @@ function renderGroups() {
 function renderGroupCard(group) {
   const body = group.teams.length
     ? group.teams.map(renderGroupRow).join("")
-    : `<tr><td class="group-empty" colspan="7">Awaiting API group teams</td></tr>`;
+    : `<tr><td class="group-empty" colspan="9">Awaiting API group teams</td></tr>`;
 
   return `
     <article class="group-card">
       <div class="group-header">
         <span class="group-label">${escapeHtml(group.name)}</span>
-        <span class="group-label">P W D L GD Pts</span>
+        <span class="group-label">P W D L GF GA GD Pts</span>
       </div>
 
       <table>
@@ -624,6 +756,8 @@ function renderGroupCard(group) {
             <th scope="col">W</th>
             <th scope="col">D</th>
             <th scope="col">L</th>
+            <th scope="col">GF</th>
+            <th scope="col">GA</th>
             <th scope="col">GD</th>
             <th scope="col">Pts</th>
           </tr>
@@ -635,7 +769,7 @@ function renderGroupCard(group) {
 
 function renderGroupRow(row) {
   return `
-    <tr class="${clean(row.team).toLowerCase() === "scotland" ? "is-scotland" : ""}">
+    <tr class="${normalise(row.team) === "scotland" ? "is-scotland" : ""}">
       <td>
         <span class="team-name">
           <span class="team-dot" aria-hidden="true"></span>
@@ -646,6 +780,8 @@ function renderGroupRow(row) {
       <td>${number(row.won)}</td>
       <td>${number(row.drawn)}</td>
       <td>${number(row.lost)}</td>
+      <td>${number(row.gf)}</td>
+      <td>${number(row.ga)}</td>
       <td>${goalDiff(number(row.gd))}</td>
       <td><strong>${number(row.pts)}</strong></td>
     </tr>`;
@@ -890,8 +1026,7 @@ function isRealTeam(team) {
 }
 
 function isScotland(match) {
-  return clean(match.home).toLowerCase() === "scotland" ||
-    clean(match.away).toLowerCase() === "scotland";
+  return normalise(match.home) === "scotland" || normalise(match.away) === "scotland";
 }
 
 function sortMatches(a, b) {
@@ -905,11 +1040,6 @@ function sortStandings(a, b) {
   if (b.gf !== a.gf) return b.gf - a.gf;
 
   return a.team.localeCompare(b.team);
-}
-
-function orderGroup(name) {
-  const match = String(name).match(/Group\s+([A-L])/i);
-  return match ? match[1].toUpperCase().charCodeAt(0) - 65 : 999;
 }
 
 function activeFilter() {
@@ -928,6 +1058,10 @@ function arr(value) {
 
 function clean(value) {
   return String(value || "").trim();
+}
+
+function normalise(value) {
+  return clean(value).toLowerCase();
 }
 
 function number(value) {
