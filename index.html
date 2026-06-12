@@ -15,12 +15,12 @@
     <section class="hero-grid" id="top">
       <div>
         <p class="eyebrow">FIFA World Cup 2026 • Scotland focused</p>
-        <h1>Follow the Tartan Army across groups, fixtures, stats and knockouts.</h1>
-        <p class="lead">A GitHub Pages-ready tracker with live score polling, editable fixture data, automatic group tables and a knockout bracket.</p>
+        <h1>Follow the Tartan Army across groups, fixtures, results and knockouts.</h1>
+        <p class="lead">A GitHub Pages-ready tracker with editable fixture data, automatic group tables and a knockout bracket.</p>
         <div class="actions">
           <a class="btn primary" href="#fixtures">View fixtures</a>
           <a class="btn" href="#scotland">Scotland focus</a>
-          <a class="btn" href="#live">Live scores</a>
+          <a class="btn" href="#groups">View groups</a>
         </div>
       </div>
       <div class="scorecard">
@@ -43,25 +43,10 @@
       <div id="scotlandFixtures" class="cards"></div>
     </section>
 
-    <section class="panel live-panel" id="live">
-      <div class="section-head split">
-        <div>
-          <p class="eyebrow">Live match centre</p>
-          <h2>Scores update automatically</h2>
-          <p class="note">Uses a browser-side live API when available, with the bundled fixtures as a fallback.</p>
-        </div>
-        <div class="live-tools">
-          <span id="liveStatus" class="live-status">Connecting…</span>
-          <button id="refreshLive" class="small-btn">Refresh now</button>
-        </div>
-      </div>
-      <div id="liveScores" class="live-grid"></div>
-    </section>
-
     <section class="panel" id="fixtures">
       <div class="section-head split">
         <div>
-          <p class="eyebrow">All fixtures</p>
+          <p class="eyebrow">All fixtures and results</p>
           <h2>Current and future match centre</h2>
         </div>
         <div class="filters">
@@ -99,13 +84,12 @@
         <p class="eyebrow">Data</p>
         <h2>Easy to update</h2>
       </div>
-      <p class="note">Live scores are handled in <code>live-config.js</code>. Update <code>data.js</code> with manual scores, confirmed kick-off times, venues or knockout teams. The tables, stats and Scotland cards update automatically.</p>
+      <p class="note">Update <code>data.js</code> with manual scores, confirmed kick-off times, venues or knockout teams. The tables, stats and Scotland cards update automatically from that file.</p>
     </section>
   </main>
 
   <footer>Made for Scotland fans • Static HTML/CSS/JS • Deploy on GitHub Pages</footer>
   <script src="data.js"></script>
-  <script src="live-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
