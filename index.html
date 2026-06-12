@@ -9,9 +9,14 @@
     content="A modern-retro Scotland-focused FIFA World Cup 2026 hub with groups, fixtures, standings and knockout path."
   />
   <meta name="theme-color" content="#071a3d" />
+  <meta property="og:title" content="Scotland 2026 — World Cup Hub" />
+  <meta property="og:description" content="Fixtures, groups, standings and knockout path for Scotland supporters." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://www.thesportsdb.com" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="background.css" />
   <link rel="stylesheet" href="standings.css" />
+  <link rel="stylesheet" href="polish.css" />
   <style>
     :focus-visible {
       outline: 3px solid var(--sky-300);
@@ -120,7 +125,7 @@
 
           <p class="last-updated-pill">
             Last updated:
-            <time id="hero-last-updated" datetime="">Loading…</time>
+            <time id="hero-last-updated" datetime="" aria-live="polite">Loading…</time>
           </p>
         </div>
 
@@ -137,7 +142,7 @@
               <span>26</span>
             </div>
 
-            <div class="scoreboard-grid">
+            <div class="scoreboard-grid" aria-live="polite">
               <div>
                 <span>Next Scotland match</span>
                 <strong>Loading…</strong>
@@ -212,7 +217,7 @@
       </div>
 
       <div class="shell">
-        <div class="fixture-list" id="fixture-list" aria-label="World Cup fixtures"></div>
+        <div class="fixture-list" id="fixture-list" aria-label="World Cup fixtures" aria-live="polite"></div>
       </div>
     </section>
 
@@ -225,7 +230,7 @@
         </p>
       </div>
 
-      <div class="shell groups-grid" id="groups-grid" aria-label="World Cup group tables"></div>
+      <div class="shell groups-grid" id="groups-grid" aria-label="World Cup group tables" aria-live="polite"></div>
     </section>
 
     <section class="section" id="knockout" aria-labelledby="knockout-title">
@@ -238,7 +243,7 @@
         </p>
       </div>
 
-      <div class="shell knockout-grid" id="knockout-grid" aria-label="Knockout stage fixtures"></div>
+      <div class="shell knockout-grid" id="knockout-grid" aria-label="Knockout stage fixtures" aria-live="polite"></div>
     </section>
   </main>
 
@@ -265,5 +270,6 @@
   </footer>
 
   <script src="script.js" defer></script>
+  <script src="polish.js" defer></script>
 </body>
 </html>
