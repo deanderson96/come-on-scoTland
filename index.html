@@ -10,6 +10,18 @@
   />
   <meta name="theme-color" content="#071a3d" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    :focus-visible {
+      outline: 3px solid var(--sky-300);
+      outline-offset: 4px;
+    }
+
+    .button:focus-visible,
+    .filter-button:focus-visible,
+    .nav-menu a:focus-visible {
+      box-shadow: 0 0 0 4px rgba(141, 216, 255, 0.28);
+    }
+  </style>
 </head>
 
 <body>
@@ -63,6 +75,9 @@
             <time id="hero-last-updated" datetime="2026-06-12T12:00:00+01:00">
               12 Jun 2026, 12:00 BST
             </time>
+          </p>
+          <p class="last-updated-pill">
+            Static schedule maintained manually. All displayed kick-off times use BST.
           </p>
         </div>
 
@@ -147,10 +162,10 @@
       </div>
 
       <div class="shell toolbar" aria-label="Fixture filters">
-        <button class="filter-button is-active" type="button" data-filter="all">All fixtures</button>
-        <button class="filter-button" type="button" data-filter="scotland">Scotland</button>
-        <button class="filter-button" type="button" data-filter="group">Group stage</button>
-        <button class="filter-button" type="button" data-filter="knockout">Knockout</button>
+        <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All fixtures</button>
+        <button class="filter-button" type="button" data-filter="scotland" aria-pressed="false">Scotland</button>
+        <button class="filter-button" type="button" data-filter="group" aria-pressed="false">Group stage</button>
+        <button class="filter-button" type="button" data-filter="knockout" aria-pressed="false">Knockout</button>
       </div>
 
       <div class="shell">
@@ -163,7 +178,7 @@
         <p class="eyebrow">Groups A-L</p>
         <h2 id="groups-title">Groups & standings</h2>
         <p>
-          Current group tables, with Scotland highlighted in Group C.
+          Current group tables, calculated from completed results in the fixture data, with Scotland highlighted in Group C.
         </p>
       </div>
 
