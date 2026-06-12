@@ -8,13 +8,12 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 
 - Scotland-focused hero section
 - Tournament key info
-- Full fixture list
+- API-driven fixture and result list
 - Scotland fixture filter
 - Group-stage fixture filter
 - Knockout fixture filter
-- All groups from A to L
-- Group standings calculated from completed fixture results
-- Knockout path from Round of 32 to Final
+- Group tables when available from the data source
+- Knockout path when available from the data source
 - BST kick-off times
 - Mobile responsive layout
 - Accessible semantic HTML
@@ -31,69 +30,71 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 └── README.md
 ```
 
+## Data source
+
+The site uses TheSportsDB as the source of tournament data.
+
+The JavaScript fetches:
+
+- World Cup 2026 fixtures/results using `eventsseason.php`
+- World Cup 2026 standings using `lookuptable.php`
+
+The configuration is in `script.js`:
+
+```js
+const CONFIG = {
+  baseUrl: "https://www.thesportsdb.com/api/v1/json",
+  publicKey: "123",
+  worldCupLeagueId: "4429",
+  season: "2026",
+  cacheMinutes: 15,
+  timeZone: "Europe/London"
+};
+```
+
+## Request frequency
+
+By default, the site makes fresh API requests only when:
+
+- there is no cached tournament data in the visitor’s browser, or
+- the cached data is older than 15 minutes.
+
+A fresh refresh makes up to 2 API requests:
+
+1. `eventsseason.php`
+2. `lookuptable.php`
+
+If a fresh request fails, the site uses the most recent successful cached response from the visitor’s browser.
+
+## API key
+
+The included public TheSportsDB v1 key is:
+
+```js
+publicKey: "123"
+```
+
+If you have your own key, replace it in `script.js`.
+
+Because this is a static GitHub Pages site, anything in `script.js` is visible in browser requests. Do not put private server-only secrets in this project.
+
 ## Timezone handling
 
-All displayed fixture times are stored and shown as **BST**.
+All displayed fixture times are rendered in **Europe/London** time.
 
-For example:
-
-```text
-Haiti v Scotland — 14 Jun, 2:00am BST
-```
-
-The JavaScript does not rely on the visitor’s device timezone for fixture display. This avoids the issue where a UK fixture may appear one hour early for some visitors.
-
-## Updating fixture data
-
-Open `script.js` and edit the `FIXTURES` array.
-
-A normal group fixture looks like this:
-
-```js
-fixture("Group C", "2026-06-14", "02:00", "Haiti", "Scotland", "Foxborough, USA")
-```
-
-A completed result looks like this:
-
-```js
-result("Group A", "2026-06-11", "20:00", "Mexico", "South Africa", "Mexico City, Mexico", "2-0")
-```
-
-A knockout fixture looks like this:
-
-```js
-knockout("Round of 32", "Match 76", "2026-06-29", "18:00", "Group C winners", "Group F runners-up", "Houston, USA")
-```
-
-## Updating group tables
-
-Group tables are calculated automatically from completed `result(...)` entries in the `FIXTURES` array.
-
-To update a table, update or add the relevant result:
-
-```js
-result("Group C", "2026-06-14", "02:00", "Haiti", "Scotland", "Foxborough, USA", "1-2")
-```
-
-The site automatically calculates:
+During the tournament window this displays as **BST**, so a fixture timestamp of `01:00 UTC` displays as:
 
 ```text
-Played = W + D + L
-Goal difference = GF - GA
-Points = 3 for a win, 1 for a draw
+2:00am BST
 ```
 
-The `GROUPS` array is still used as the source of the group/team list.
+This prevents the Haiti v Scotland issue where a 2:00am BST kick-off could appear one hour early.
 
-## Updating the last updated timestamp
+## Last updated
 
-Open `script.js` and change:
+The visible “Last updated” timestamp is generated from the most recent successful data fetch.
 
-```js
-const SITE_LAST_UPDATED = "2026-06-12T12:00:00+01:00";
-```
-
-This updates the timestamp displayed in the hero and footer.
+You do not need to manually update a timestamp.
 
 ## Deploying to GitHub Pages
 
@@ -148,9 +149,13 @@ Edit the CSS variables at the top of `styles.css`.
 
 Edit the hero section in `index.html`.
 
-### Navigation labels
+### API refresh interval
 
-Edit the navigation list in `index.html`.
+Change this value in `script.js`:
+
+```js
+cacheMinutes: 15
+```
 
 ### Layout
 
@@ -164,6 +169,8 @@ Most layout controls are in `styles.css`:
 ```
 
 ## Credits
+
+Football data powered by TheSportsDB.
 
 Fan-made project for Scotland supporters.
 
