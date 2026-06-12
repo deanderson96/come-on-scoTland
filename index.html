@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scotland World Cup Centre</title>
+  <meta name="description" content="A Scotland-focused FIFA World Cup centre with fixtures, results, standings, knockout rounds, venues and kick-off times powered by TheSportsDB." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero" id="top">
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#top"><span class="flag">🏴</span> Scotland World Cup Centre</a>
+      <div class="nav-actions">
+        <a href="#today">Today</a>
+        <a href="#fixtures">Fixtures</a>
+        <a href="#groups">Tables</a>
+        <a href="#knockout">Knockout</a>
+        <button id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+      </div>
+    </nav>
+    <section class="hero-grid">
+      <div>
+        <p class="eyebrow">FIFA World Cup • Scotland focused</p>
+        <h1>Fixtures, results, tables and the road to the final.</h1>
+        <p class="lead">A polished tournament centre built around Scotland, with match data, kick-off times, venues, group standings and knockout rounds loaded from TheSportsDB.</p>
+        <div class="actions">
+          <a class="btn primary" href="#today">Today’s fixtures</a>
+          <a class="btn" href="#scotland">Scotland focus</a>
+          <a class="btn" href="#fixtures">Tournament centre</a>
+        </div>
+      </div>
+      <aside class="scorecard" aria-label="Scotland summary">
+        <div class="saltire" aria-hidden="true">✕</div>
+        <p class="eyebrow">Scotland watch</p>
+        <h2 id="scotlandSummaryTitle">Loading tournament data</h2>
+        <div id="nextScotlandMatch" class="next-match">Preparing match centre…</div>
+      </aside>
+    </section>
+  </header>
+
+  <main>
+    <section class="stats-strip" id="stats" aria-label="Tournament summary statistics"></section>
+
+    <section class="panel status-panel">
+      <div>
+        <p class="eyebrow">Data status</p>
+        <h2 id="dataStatusTitle">Connecting to TheSportsDB</h2>
+        <p id="dataStatus" class="note">Tournament data is loaded automatically and cached to reduce unnecessary requests.</p>
+      </div>
+      <button id="refreshData" class="small-btn">Update data</button>
+    </section>
+
+    <section class="panel" id="today">
+      <div class="section-head split">
+        <div>
+          <p class="eyebrow">Today</p>
+          <h2>Today’s fixtures</h2>
+          <p class="note" id="todayDate"></p>
+        </div>
+      </div>
+      <div id="todayFixtures" class="cards"></div>
+    </section>
+
+    <section class="panel" id="scotland">
+      <div class="section-head">
+        <p class="eyebrow">Scotland focus</p>
+        <h2>Scotland fixtures and results</h2>
+      </div>
+      <div id="scotlandFixtures" class="cards"></div>
+    </section>
+
+    <section class="panel" id="fixtures">
+      <div class="section-head split">
+        <div>
+          <p class="eyebrow">Tournament centre</p>
+          <h2>Fixtures and results</h2>
+        </div>
+        <div class="filters" aria-label="Fixture filters">
+          <input id="searchInput" placeholder="Search team, venue, round…" />
+          <select id="roundFilter"><option value="all">All rounds</option></select>
+          <select id="statusFilter"><option value="all">All statuses</option><option value="upcoming">Upcoming</option><option value="completed">Completed</option></select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Round</th><th>Match</th><th>Venue</th><th>Status</th></tr></thead>
+          <tbody id="fixtureRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="groups">
+      <div class="section-head">
+        <p class="eyebrow">Groups</p>
+        <h2>Tables and standings</h2>
+        <p class="note">Standings are loaded from the API when available; otherwise they are calculated from completed API results.</p>
+      </div>
+      <div id="groupTables" class="group-grid"></div>
+    </section>
+
+    <section class="panel" id="knockout">
+      <div class="section-head">
+        <p class="eyebrow">Knockout</p>
+        <h2>Route to the final</h2>
+      </div>
+      <div id="bracket" class="bracket"></div>
+    </section>
+
+    <section class="panel" id="venues">
+      <div class="section-head">
+        <p class="eyebrow">Venues</p>
+        <h2>Venue guide</h2>
+      </div>
+      <div id="venuesGrid" class="venue-grid"></div>
+    </section>
+  </main>
+
+  <footer>Scotland World Cup Centre • Data powered by TheSportsDB</footer>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
