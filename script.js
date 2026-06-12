@@ -3,7 +3,7 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v4",
+  cacheKey: "scotland-2026-world-cup-cache-v5",
   cacheMinutes: 5,
   refreshMinutes: 5,
   timeoutMs: 10000,
@@ -277,6 +277,7 @@ function mapEvent(event) {
   const stage = stageName(event);
   const group = groupName([event.strGroup, event.strRound, event.strStage, event.strEvent].join(" "));
   const phase = isKnockoutStage(stage) ? "knockout" : "group";
+  const matchScore = score(event);
 
   return {
     id: clean(event.idEvent) || `${home}-${away}-${event.dateEvent}-${event.strTime}`,
@@ -287,8 +288,8 @@ function mapEvent(event) {
     away,
     venue: clean([event.strVenue, event.strCity].filter(Boolean).join(", ")) || "Venue TBC",
     kickoff: kickoffDate(event),
-    score: score(event),
-    status: score(event) ? "Result" : clean(event.strStatus || "Scheduled")
+    score: matchScore,
+    status: matchStatus(event, matchScore)
   };
 }
 
@@ -466,7 +467,7 @@ function renderFixtureCard(match) {
         <div class="fixture-meta">${escapeHtml(match.venue)}</div>
       </div>
 
-      <span class="fixture-status">${escapeHtml(match.status)}</span>
+      <span class="fixture-status ${statusClass(match.status)}">${escapeHtml(match.status)}</span>
     </article>`;
 }
 
@@ -713,6 +714,39 @@ function score(event) {
   if (event.intAwayScore === null || event.intAwayScore === undefined || event.intAwayScore === "") return "";
 
   return `${event.intHomeScore}-${event.intAwayScore}`;
+}
+
+function matchStatus(event, matchScore) {
+  const apiStatus = clean(event.strStatus || event.strProgress || event.strLive || event.status);
+  const lowerStatus = apiStatus.toLowerCase();
+
+  if (isLiveStatus(lowerStatus)) {
+    return "Live";
+  }
+
+  if (isFinishedStatus(lowerStatus)) {
+    return "Result";
+  }
+
+  if (matchScore) {
+    return "Result";
+  }
+
+  return apiStatus || "Scheduled";
+}
+
+function isLiveStatus(value) {
+  return /^(live|in play|in-play|playing|1h|2h|ht|et|aet|pen|pens|penalties)$/i.test(value) ||
+    /live|in progress|in-play|in play|first half|second half|half.?time|extra time|penalt/i.test(value);
+}
+
+function isFinishedStatus(value) {
+  return /^(ft|full time|full-time|finished|match finished|ended|after extra time|aet)$/i.test(value) ||
+    /full.?time|finished|match ended|result/i.test(value);
+}
+
+function statusClass(value) {
+  return `status-${clean(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "scheduled"}`;
 }
 
 function groupName(value) {
