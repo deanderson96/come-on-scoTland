@@ -3,8 +3,9 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v3",
-  cacheMinutes: 15,
+  cacheKey: "scotland-2026-world-cup-cache-v4",
+  cacheMinutes: 5,
+  refreshMinutes: 5,
   timeoutMs: 10000,
   timeZone: "Europe/London",
 
@@ -32,6 +33,8 @@ let state = {
   knockout: []
 };
 
+let refreshTimer = null;
+
 document.addEventListener("DOMContentLoaded", init);
 
 function init() {
@@ -44,6 +47,7 @@ function init() {
 
   renderLoading();
   loadData();
+  startAutoRefresh();
 }
 
 function setupNavigation() {
@@ -75,6 +79,17 @@ function setupFilters() {
       renderFixtures(button.dataset.filter || "all");
     });
   });
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+  }
+
+  refreshTimer = setInterval(() => {
+    if (document.visibilityState === "hidden") return;
+    loadData();
+  }, CONFIG.refreshMinutes * 60 * 1000);
 }
 
 async function loadData() {
@@ -690,7 +705,7 @@ function writeCache(data) {
 
 function cacheExpired(value) {
   const fetched = new Date(value).getTime();
-  return !Number.isFinite(fetched) || Date.now() - fetched > CONFIG.cacheMinutes * 60 * 1000;
+  return !Number.isFinite(fetched) || Date.now() - fetched >= CONFIG.cacheMinutes * 60 * 1000;
 }
 
 function score(event) {
