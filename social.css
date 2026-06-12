@@ -1,0 +1,23 @@
+.social-section {
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.95), rgba(246, 240, 223, 0.95));
+}
+
+.timeline-card {
+  overflow: hidden;
+  min-height: 480px;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 40px rgba(7, 26, 61, 0.09);
+}
+
+.timeline-fallback,
+.group-empty {
+  color: #475467;
+  font-weight: 800;
+}
+
+.section-navy .group-empty {
+  color: rgba(255, 255, 255, 0.62);
+}
