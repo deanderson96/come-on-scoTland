@@ -49,6 +49,34 @@
 }
 
 /*
+ * Header mark: CSS-drawn Saltire.
+ * Keeps the logo crisp on GitHub Pages without needing an image asset.
+ */
+.brand-mark {
+  position: relative;
+  overflow: hidden;
+  font-size: 0;
+  color: transparent;
+  background:
+    linear-gradient(135deg, transparent 39%, rgba(255, 255, 255, 0.95) 40% 46%, transparent 47%),
+    linear-gradient(45deg, transparent 39%, rgba(255, 255, 255, 0.95) 40% 46%, transparent 47%),
+    radial-gradient(circle at 50% 50%, rgba(141, 216, 255, 0.2), transparent 58%),
+    var(--navy-800) !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(141, 216, 255, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: rgba(141, 216, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+/*
  * Visible but subtle overhead-kick player artwork.
  * The embedded image data is defined in background.css; this linked file only
  * overrides placement and opacity so it is clearly present on the page.
