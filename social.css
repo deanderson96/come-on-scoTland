@@ -4,17 +4,61 @@
 
 .timeline-card {
   overflow: hidden;
-  min-height: 650px;
+  min-height: 260px;
   padding: 0;
   border: 1px solid rgba(141, 216, 255, 0.24);
   border-radius: var(--radius-lg);
-  background: var(--navy-950);
+  background:
+    radial-gradient(circle at top left, rgba(141, 216, 255, 0.14), transparent 18rem),
+    var(--navy-950);
   box-shadow: 0 16px 40px rgba(7, 26, 61, 0.14);
+}
+
+.timeline-card iframe {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: auto !important;
+}
+
+.timeline-loading,
+.timeline-fallback {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: center;
+}
+
+.timeline-loading strong,
+.timeline-fallback strong {
+  color: var(--white);
+  font-size: 1.25rem;
+}
+
+.timeline-loading span,
+.timeline-fallback p {
+  max-width: 32rem;
+  margin: 0;
+}
+
+.timeline-fallback a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: var(--sky-300);
+  font-weight: 950;
+  text-decoration: none;
 }
 
 .timeline-fallback,
 .group-empty {
-  color: #475467;
   font-weight: 800;
 }
 
