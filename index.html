@@ -3,121 +3,1641 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Scotland World Cup Centre</title>
-  <meta name="description" content="A Scotland-focused FIFA World Cup centre with fixtures, results, standings, knockout rounds, venues and kick-off times powered by TheSportsDB." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="A Scotland-focused FIFA World Cup 2026 dashboard powered by TheSportsDB." />
+  <title>Scotland World Cup 2026 Hub</title>
+  <style>
+    :root {
+      --ink: #101a3f;
+      --navy: #0b1540;
+      --navy-2: #17225b;
+      --sky: #15b8aa;
+      --mint: #9fe6d9;
+      --cream: #fff2ca;
+      --gold: #f3c55e;
+      --coral: #ee7865;
+      --salmon: #f6a681;
+      --grass: #277244;
+      --white: #fffaf1;
+      --muted: #5f6581;
+      --line: rgba(16, 26, 63, 0.18);
+      --shadow: 0 24px 70px rgba(11, 21, 64, 0.24);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: #fffaf1;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 4%, rgba(255,255,255,0.75) 0 9%, transparent 10%),
+        radial-gradient(circle at 86% 10%, rgba(255,242,202,0.45) 0 13%, transparent 14%),
+        linear-gradient(180deg, #13b7aa 0%, #77d3c1 42%, #fffaf1 43%, #fffaf1 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      z-index: 999;
+      background-image:
+        repeating-radial-gradient(circle at 0 0, rgba(16,26,63,0.45) 0 1px, transparent 1px 4px),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.22), rgba(255,255,255,0.22) 1px, transparent 1px, transparent 3px);
+      mix-blend-mode: multiply;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 1rem;
+      top: -4rem;
+      z-index: 1000;
+      background: var(--cream);
+      color: var(--navy);
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      transition: top 0.2s ease;
+    }
+
+    .skip-link:focus { top: 1rem; }
+
+    .site-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 14px 0;
+      color: var(--cream);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .crest-mark {
+      width: 52px;
+      aspect-ratio: 1;
+      border: 3px solid var(--cream);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 4px rgba(255,242,202,0.35);
+      background: rgba(255, 242, 202, 0.08);
+    }
+
+    .crest-mark svg { width: 33px; height: 33px; }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link,
+    .ghost-button {
+      border: 1px solid rgba(255,242,202,0.5);
+      color: var(--cream);
+      background: rgba(11,21,64,0.12);
+      backdrop-filter: blur(8px);
+      text-decoration: none;
+      padding: 0.7rem 0.95rem;
+      border-radius: 999px;
+      font-weight: 850;
+      font-size: 0.86rem;
+    }
+
+    .ghost-button:hover,
+    .nav-link:hover {
+      background: rgba(255,242,202,0.16);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 26px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+
+    .hero-copy {
+      min-height: 650px;
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(circle at 14% 18%, rgba(255,250,241,0.95) 0 8%, transparent 8.2%),
+        radial-gradient(circle at 25% 18%, rgba(255,250,241,0.95) 0 11%, transparent 11.2%),
+        radial-gradient(circle at 40% 18%, rgba(255,250,241,0.95) 0 8%, transparent 8.2%),
+        linear-gradient(135deg, rgba(255,250,241,0.96), rgba(255,242,202,0.9));
+      padding: clamp(28px, 5vw, 58px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    .hero-copy::before {
+      content: "";
+      position: absolute;
+      inset: auto -18% -18% -16%;
+      height: 44%;
+      transform: rotate(-3deg);
+      background:
+        linear-gradient(160deg, transparent 0 12%, rgba(11,21,64,0.95) 12% 17%, transparent 17% 28%, rgba(238,120,101,0.9) 28% 43%, rgba(243,197,94,0.95) 43% 62%, rgba(39,114,68,0.92) 62% 100%);
+      opacity: 0.95;
+    }
+
+    .hero-copy::after {
+      content: "SCOTLAND";
+      position: absolute;
+      right: -8px;
+      top: 18px;
+      font-weight: 1000;
+      font-size: clamp(5rem, 12vw, 10rem);
+      color: rgba(18, 83, 139, 0.08);
+      letter-spacing: -0.08em;
+      pointer-events: none;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--navy);
+      background: rgba(255,255,255,0.75);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.55rem 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .spark {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 61% 38%, 100% 50%, 61% 62%, 50% 100%, 39% 62%, 0 50%, 39% 38%);
+      box-shadow: 0 0 18px rgba(243,197,94,0.9);
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin: 2rem 0 1.2rem;
+      font-size: clamp(3.6rem, 8.8vw, 7.9rem);
+      line-height: 0.82;
+      letter-spacing: -0.09em;
+      max-width: 9ch;
+      text-transform: uppercase;
+    }
+
+    .hero-copy p {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(1.03rem, 2vw, 1.25rem);
+      line-height: 1.65;
+      color: #263158;
+      max-width: 58ch;
+      margin: 0 0 1.5rem;
+      font-weight: 650;
+    }
+
+    .hero-cta {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 1.4rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 999px;
+      padding: 0.95rem 1.18rem;
+      font-weight: 950;
+      box-shadow: 0 12px 30px rgba(11,21,64,0.22);
+    }
+
+    .button.alt {
+      background: var(--coral);
+      color: var(--navy);
+    }
+
+    .button.light {
+      background: rgba(255,255,255,0.8);
+      color: var(--navy);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .poster-panel {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      min-height: 650px;
+      box-shadow: var(--shadow);
+      background:
+        linear-gradient(180deg, rgba(18,191,174,0.97) 0 53%, rgba(255,250,241,0.9) 53% 54%, rgba(238,120,101,0.96) 54% 76%, rgba(39,114,68,0.96) 76% 100%);
+      border: 1px solid rgba(255,255,255,0.35);
+      position: relative;
+      isolation: isolate;
+    }
+
+    .poster-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(45deg, transparent 0 44%, rgba(255,255,255,0.7) 44.2% 46.5%, transparent 46.7% 100%),
+        linear-gradient(-45deg, transparent 0 48%, rgba(255,255,255,0.55) 48.2% 50%, transparent 50.2% 100%);
+      opacity: 0.32;
+      z-index: -1;
+    }
+
+    .poster-panel::after {
+      content: "26";
+      position: absolute;
+      top: 0;
+      right: 8px;
+      color: rgba(11,21,64,0.12);
+      font-size: clamp(8rem, 19vw, 16rem);
+      font-weight: 1000;
+      letter-spacing: -0.15em;
+      z-index: -1;
+    }
+
+    .stamp-card {
+      position: absolute;
+      right: 28px;
+      bottom: 38px;
+      width: min(290px, calc(100% - 56px));
+      background: var(--navy);
+      color: var(--cream);
+      padding: 26px 22px;
+      border-radius: 6px;
+      outline: 2px solid var(--gold);
+      outline-offset: -10px;
+      filter: drop-shadow(0 18px 30px rgba(11,21,64,0.3));
+    }
+
+    .stamp-card::before,
+    .stamp-card::after {
+      content: "";
+      position: absolute;
+      left: -10px;
+      right: -10px;
+      height: 20px;
+      background: radial-gradient(circle, transparent 0 7px, var(--navy) 7.3px) left/20px 20px repeat-x;
+    }
+
+    .stamp-card::before { top: -10px; }
+    .stamp-card::after { bottom: -10px; }
+
+    .stamp-card h2 {
+      margin: 0 0 0.7rem;
+      font-family: Georgia, "Times New Roman", serif;
+      letter-spacing: 0.08em;
+      font-size: 1.8rem;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .stamp-card p {
+      margin: 0.2rem 0;
+      color: rgba(255,242,202,0.82);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    .mini-stadium {
+      margin-top: 22px;
+      border: 2px solid rgba(243,197,94,0.9);
+      border-radius: 50%;
+      height: 82px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-stadium::before,
+    .mini-stadium::after {
+      content: "";
+      position: absolute;
+      inset: 12px 24px;
+      border: 1px solid rgba(243,197,94,0.75);
+      border-radius: 50%;
+    }
+
+    .mini-stadium::after { inset: 24px 48px; }
+
+    .footballer {
+      position: absolute;
+      left: 8%;
+      bottom: 70px;
+      width: min(390px, 78%);
+      aspect-ratio: 0.72;
+      transform: rotate(-6deg);
+      filter: drop-shadow(0 36px 22px rgba(11,21,64,0.22));
+    }
+
+    .footballer .head {
+      position: absolute;
+      top: 3%;
+      left: 40%;
+      width: 22%;
+      aspect-ratio: 0.82;
+      border-radius: 50% 50% 46% 46%;
+      background: #e2785e;
+      box-shadow: inset 12px 0 0 rgba(255, 200, 173, 0.48);
+    }
+
+    .footballer .hair {
+      position: absolute;
+      top: -6%;
+      left: 38%;
+      width: 24%;
+      height: 16%;
+      background: #4e1e1d;
+      clip-path: polygon(4% 69%, 20% 15%, 43% 38%, 63% 5%, 80% 42%, 96% 22%, 89% 90%, 36% 100%);
+    }
+
+    .footballer .body {
+      position: absolute;
+      top: 18%;
+      left: 24%;
+      width: 48%;
+      height: 30%;
+      background:
+        linear-gradient(32deg, transparent 36%, rgba(50, 121, 197, 0.88) 36.5% 49%, transparent 49.5%),
+        var(--white);
+      border-radius: 50% 45% 20% 20%;
+      transform: skewX(-10deg) rotate(8deg);
+      border: 2px solid rgba(16,26,63,0.08);
+    }
+
+    .footballer .arm {
+      position: absolute;
+      top: 21%;
+      width: 43%;
+      height: 8%;
+      background: var(--white);
+      border-radius: 999px;
+    }
+
+    .footballer .arm.left { left: -2%; transform: rotate(114deg); transform-origin: right center; }
+    .footballer .arm.right { right: -1%; transform: rotate(50deg); transform-origin: left center; }
+
+    .footballer .shorts {
+      position: absolute;
+      top: 45%;
+      left: 31%;
+      width: 34%;
+      height: 18%;
+      background: var(--white);
+      border-radius: 8px 8px 18px 18px;
+      transform: rotate(5deg);
+    }
+
+    .footballer .leg {
+      position: absolute;
+      width: 9%;
+      height: 42%;
+      background: var(--white);
+      border-radius: 999px;
+      transform-origin: top center;
+    }
+
+    .footballer .leg.left { top: 59%; left: 34%; transform: rotate(26deg); }
+    .footballer .leg.right { top: 57%; left: 55%; transform: rotate(-28deg); }
+
+    .footballer .boot {
+      position: absolute;
+      width: 22%;
+      height: 7%;
+      background: #2a3158;
+      border-radius: 999px 30px 20px 999px;
+    }
+
+    .footballer .boot.left { bottom: -1%; left: 38%; transform: rotate(21deg); }
+    .footballer .boot.right { bottom: 3%; left: 42%; transform: rotate(-35deg); }
+
+    .number-nine {
+      position: absolute;
+      top: 49%;
+      left: 49%;
+      font-size: 3rem;
+      color: rgba(11,21,64,0.45);
+      font-family: Georgia, serif;
+      font-weight: 950;
+      transform: rotate(5deg);
+    }
+
+    .saltire-badge {
+      position: absolute;
+      top: 26px;
+      left: 28px;
+      width: 122px;
+      aspect-ratio: 1;
+      border: 3px solid var(--cream);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--cream);
+      font-weight: 1000;
+      text-align: center;
+      font-size: 0.67rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255,242,202,0.1);
+      box-shadow: inset 0 0 0 6px rgba(255,242,202,0.22);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin: 26px 0;
+    }
+
+    .stat-card,
+    .panel {
+      background: rgba(255,250,241,0.88);
+      border: 1px solid rgba(16,26,63,0.16);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 40px rgba(11,21,64,0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-card {
+      padding: 20px;
+      min-height: 128px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-value {
+      margin-top: 12px;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: -0.06em;
+      color: var(--navy);
+    }
+
+    .stat-detail {
+      margin-top: 8px;
+      color: #636986;
+      font-weight: 750;
+      font-size: 0.87rem;
+    }
+
+    .panel {
+      padding: clamp(18px, 3vw, 28px);
+      margin-bottom: 22px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--coral);
+      font-weight: 1000;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3.1rem);
+      letter-spacing: -0.07em;
+      line-height: 0.96;
+    }
+
+    .panel-subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 72ch;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 0.4rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 950;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid rgba(16,26,63,0.2);
+      border-radius: 14px;
+      padding: 0.85rem 0.9rem;
+      color: var(--navy);
+      background: rgba(255,255,255,0.72);
+      outline: none;
+      font-weight: 750;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px rgba(238,120,101,0.15);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .filter-row input[type="search"] {
+      min-width: min(100%, 310px);
+      flex: 1;
+    }
+
+    .checkbox-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.78rem 0.9rem;
+      border: 1px solid rgba(16,26,63,0.18);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.56);
+      color: var(--navy);
+      font-weight: 900;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.9rem;
+    }
+
+    .checkbox-pill input { width: auto; accent-color: var(--navy); }
+
+    .match-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .match-card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(16,26,63,0.14);
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 225px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      text-align: left;
+      color: inherit;
+    }
+
+    .match-card:hover,
+    .match-card:focus-visible {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 35px rgba(11,21,64,0.12);
+    }
+
+    .match-card.scotland {
+      border-color: rgba(238,120,101,0.45);
+      background:
+        linear-gradient(135deg, rgba(255,250,241,0.92), rgba(255,242,202,0.78)),
+        linear-gradient(45deg, transparent 0 45%, rgba(0,94,184,0.22) 45.5% 48%, transparent 48.5% 100%);
+    }
+
+    .match-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      border-radius: 999px;
+      padding: 0.3rem 0.55rem;
+      background: rgba(15, 184, 170, 0.13);
+      color: #096960;
+      font-weight: 1000;
+      font-size: 0.68rem;
+    }
+
+    .status-pill.finished {
+      background: rgba(11,21,64,0.08);
+      color: var(--navy);
+    }
+
+    .status-pill.live {
+      background: rgba(238,120,101,0.18);
+      color: #a42a1d;
+    }
+
+    .teams {
+      display: grid;
+      gap: 8px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-weight: 950;
+      color: var(--navy);
+    }
+
+    .team-row img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 8px rgba(11,21,64,0.12));
+    }
+
+    .score {
+      font-size: 1.25rem;
+      color: var(--coral);
+    }
+
+    .match-foot {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .date-group {
+      margin-top: 20px;
+    }
+
+    .date-heading {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin: 0 0 12px;
+      padding: 0.55rem 0.75rem;
+      border-radius: 999px;
+      background: var(--navy);
+      color: var(--cream);
+      font-weight: 950;
+      letter-spacing: 0.03em;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(16,26,63,0.14);
+      background: rgba(255,255,255,0.62);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      padding: 0.9rem 0.95rem;
+      border-bottom: 1px solid rgba(16,26,63,0.1);
+      text-align: left;
+      font-weight: 760;
+    }
+
+    th {
+      background: rgba(11,21,64,0.95);
+      color: var(--cream);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    tr.scotland-row {
+      background: rgba(238,120,101,0.15);
+      color: var(--navy);
+    }
+
+    .table-team {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 950;
+    }
+
+    .table-team img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .empty,
+    .error {
+      padding: 24px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.68);
+      border: 1px dashed rgba(16,26,63,0.24);
+      color: var(--muted);
+      line-height: 1.6;
+      font-weight: 750;
+    }
+
+    .error {
+      border-color: rgba(238,120,101,0.55);
+      color: #8a261c;
+      background: rgba(238,120,101,0.1);
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(16,26,63,0.12);
+      border-top-color: var(--coral);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,21,64,0.62);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: min(760px, calc(100vh - 40px));
+      overflow-y: auto;
+      border-radius: 28px;
+      background: var(--white);
+      box-shadow: 0 40px 90px rgba(0,0,0,0.32);
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 16px;
+    }
+
+    .modal h3 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: -0.05em;
+    }
+
+    .close-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--cream);
+      font-weight: 1000;
+      font-size: 1.2rem;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .detail-item {
+      background: rgba(11,21,64,0.06);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .detail-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 950;
+      margin-bottom: 5px;
+    }
+
+    .detail-item strong {
+      color: var(--navy);
+      line-height: 1.35;
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+      font-weight: 700;
+      padding: 28px 0 12px;
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-copy, .poster-panel { min-height: 560px; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .match-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 660px) {
+      .site-shell { width: min(100% - 20px, 1180px); padding-top: 8px; }
+      .topbar { align-items: flex-start; }
+      .top-actions { display: none; }
+      .hero-copy, .poster-panel { min-height: 520px; }
+      .hero-copy { padding: 28px 22px; }
+      .footballer { width: 82%; left: -3%; bottom: 78px; }
+      .stamp-card { right: 18px; bottom: 30px; width: min(255px, calc(100% - 36px)); }
+      .stat-grid, .settings-grid, .match-grid, .detail-grid { grid-template-columns: 1fr; }
+      .panel { padding: 18px; }
+      h1 { font-size: clamp(3.1rem, 18vw, 5rem); }
+    }
+  </style>
 </head>
 <body>
-  <header class="hero" id="top">
-    <nav class="nav" aria-label="Primary navigation">
-      <a class="brand" href="#top"><span class="flag">🏴</span> Scotland World Cup Centre</a>
-      <div class="nav-actions">
-        <a href="#today">Today</a>
-        <a href="#fixtures">Fixtures</a>
-        <a href="#groups">Tables</a>
-        <a href="#knockout">Knockout</a>
-        <button id="themeToggle" aria-label="Toggle dark mode">🌙</button>
-      </div>
-    </nav>
-    <section class="hero-grid">
-      <div>
-        <p class="eyebrow">FIFA World Cup • Scotland focused</p>
-        <h1>Fixtures, results, tables and the road to the final.</h1>
-        <p class="lead">A polished tournament centre built around Scotland, with match data, kick-off times, venues, group standings and knockout rounds loaded from TheSportsDB.</p>
-        <div class="actions">
-          <a class="btn primary" href="#today">Today’s fixtures</a>
-          <a class="btn" href="#scotland">Scotland focus</a>
-          <a class="btn" href="#fixtures">Tournament centre</a>
+  <a class="skip-link" href="#main">Skip to dashboard</a>
+  <div class="site-shell">
+    <header class="topbar" aria-label="Site header">
+      <a class="brand" href="#">
+        <span class="crest-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" role="img">
+            <path d="M10 10l44 44M54 10L10 54" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+            <path d="M10 10l44 44M54 10L10 54" stroke="#0b1540" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        Scotland WC26
+      </a>
+      <nav class="top-actions" aria-label="Main navigation">
+        <a class="nav-link" href="#scotland-watch">Scotland watch</a>
+        <a class="nav-link" href="#fixtures">Fixtures</a>
+        <a class="nav-link" href="#standings">Standings</a>
+        <button class="ghost-button" type="button" id="refreshTop">Refresh data</button>
+      </nav>
+    </header>
+
+    <section class="hero" aria-label="Scotland World Cup hero">
+      <div class="hero-copy">
+        <span class="tagline"><span class="spark" aria-hidden="true"></span> Live tournament dashboard</span>
+        <h1>Scotland to the world.</h1>
+        <p>
+          A poster-style World Cup 2026 hub with a Scotland-first view: fixtures, results, table, countdown,
+          and API-powered match details in one GitHub Pages-ready file.
+        </p>
+        <div class="hero-cta">
+          <a class="button" href="#scotland-watch">Follow Scotland</a>
+          <a class="button alt" href="#fixtures">View fixtures</a>
+          <button class="button light" type="button" id="openSettings">API settings</button>
         </div>
       </div>
-      <aside class="scorecard" aria-label="Scotland summary">
-        <div class="saltire" aria-hidden="true">✕</div>
-        <p class="eyebrow">Scotland watch</p>
-        <h2 id="scotlandSummaryTitle">Loading tournament data</h2>
-        <div id="nextScotlandMatch" class="next-match">Preparing match centre…</div>
-      </aside>
-    </section>
-  </header>
 
-  <main>
-    <section class="stats-strip" id="stats" aria-label="Tournament summary statistics"></section>
-
-    <section class="panel status-panel">
-      <div>
-        <p class="eyebrow">Data status</p>
-        <h2 id="dataStatusTitle">Connecting to TheSportsDB</h2>
-        <p id="dataStatus" class="note">Tournament data is loaded automatically and cached to reduce unnecessary requests.</p>
+      <div class="poster-panel" aria-hidden="true">
+        <div class="saltire-badge">Scotland<br>Est. 1873</div>
+        <div class="footballer">
+          <div class="hair"></div>
+          <div class="head"></div>
+          <div class="arm left"></div>
+          <div class="arm right"></div>
+          <div class="body"></div>
+          <div class="shorts"></div>
+          <div class="leg left"></div>
+          <div class="leg right"></div>
+          <div class="boot left"></div>
+          <div class="boot right"></div>
+          <div class="number-nine">9</div>
+        </div>
+        <div class="stamp-card">
+          <h2>World Cup<br>2026</h2>
+          <p>Powered by TheSportsDB</p>
+          <p>Scotland focus view</p>
+          <div class="mini-stadium">⚽</div>
+        </div>
       </div>
-      <button id="refreshData" class="small-btn">Update data</button>
     </section>
 
-    <section class="panel" id="today">
-      <div class="section-head split">
+    <main id="main">
+      <section class="stat-grid" aria-label="Dashboard stats">
+        <article class="stat-card">
+          <span class="stat-label">Tournament status</span>
+          <strong class="stat-value" id="countdownValue">—</strong>
+          <span class="stat-detail" id="countdownDetail">Calculating…</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Total fixtures loaded</span>
+          <strong class="stat-value" id="totalFixtures">—</strong>
+          <span class="stat-detail">World Cup feed</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Scotland fixtures</span>
+          <strong class="stat-value" id="scotlandFixtures">—</strong>
+          <span class="stat-detail" id="focusLabel">Focus team: Scotland</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">API status</span>
+          <strong class="stat-value" id="apiStatus">Idle</strong>
+          <span class="stat-detail" id="lastUpdated">Not loaded yet</span>
+        </article>
+      </section>
+
+      <section class="panel" id="settingsPanel" hidden>
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Configuration</p>
+            <h2>SportsDB settings</h2>
+            <p class="panel-subtitle">Defaults target FIFA World Cup league ID 4429, season 2026, and Scotland as the focus team. Use your own premium key if you have one.</p>
+          </div>
+        </div>
+        <form class="settings-grid" id="settingsForm">
+          <label>
+            API key
+            <input id="apiKeyInput" name="apiKey" value="123" autocomplete="off" />
+          </label>
+          <label>
+            League ID
+            <input id="leagueIdInput" name="leagueId" value="4429" inputmode="numeric" />
+          </label>
+          <label>
+            Season
+            <input id="seasonInput" name="season" value="2026" />
+          </label>
+          <label>
+            Focus team
+            <input id="focusTeamInput" name="focusTeam" value="Scotland" />
+          </label>
+          <button class="button" type="submit">Save and reload</button>
+        </form>
+      </section>
+
+      <section class="panel" id="scotland-watch">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Saltire watch</p>
+            <h2 id="watchTitle">Scotland fixtures</h2>
+            <p class="panel-subtitle" id="watchSubtitle">Matches involving Scotland are highlighted from the live World Cup feed.</p>
+          </div>
+          <button class="button light" type="button" id="refreshWatch">Refresh</button>
+        </div>
+        <div id="scotlandMatches" class="match-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" id="fixtures">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Tournament board</p>
+            <h2>Fixtures and results</h2>
+            <p class="panel-subtitle">Filter the full tournament feed, or show only the Scotland path.</p>
+          </div>
+        </div>
+        <div class="filter-row">
+          <input id="fixtureSearch" type="search" placeholder="Search teams, venue, round, city…" aria-label="Search fixtures" />
+          <label class="checkbox-pill"><input id="scotlandOnly" type="checkbox" /> Scotland only</label>
+          <label class="checkbox-pill"><input id="hideFinished" type="checkbox" /> Hide finished</label>
+        </div>
+        <div id="fixtureList" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" id="standings">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Table</p>
+            <h2>World Cup standings</h2>
+            <p class="panel-subtitle">If TheSportsDB has group/table data for the selected season, Scotland is highlighted automatically.</p>
+          </div>
+        </div>
+        <div id="standingsTable" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Built for GitHub Pages. Data comes from TheSportsDB, cached locally in the browser to avoid unnecessary API calls.
+    </footer>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
         <div>
-          <p class="eyebrow">Today</p>
-          <h2>Today’s fixtures</h2>
-          <p class="note" id="todayDate"></p>
+          <p class="eyebrow">Match details</p>
+          <h3 id="modalTitle">Fixture</h3>
         </div>
+        <button class="close-button" type="button" id="closeModal" aria-label="Close match details">×</button>
       </div>
-      <div id="todayFixtures" class="cards"></div>
-    </section>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 
-    <section class="panel" id="scotland">
-      <div class="section-head">
-        <p class="eyebrow">Scotland focus</p>
-        <h2>Scotland fixtures and results</h2>
-      </div>
-      <div id="scotlandFixtures" class="cards"></div>
-    </section>
+  <script>
+    const DEFAULTS = {
+      apiKey: "123",
+      leagueId: "4429",
+      season: "2026",
+      focusTeam: "Scotland",
+      tournamentStart: "2026-06-11T19:00:00-04:00"
+    };
 
-    <section class="panel" id="fixtures">
-      <div class="section-head split">
-        <div>
-          <p class="eyebrow">Tournament centre</p>
-          <h2>Fixtures and results</h2>
+    const CACHE_TTL_MS = 8 * 60 * 1000;
+    const BASE_URL = "https://www.thesportsdb.com/api/v1/json";
+
+    const dom = {
+      countdownValue: document.querySelector("#countdownValue"),
+      countdownDetail: document.querySelector("#countdownDetail"),
+      totalFixtures: document.querySelector("#totalFixtures"),
+      scotlandFixtures: document.querySelector("#scotlandFixtures"),
+      focusLabel: document.querySelector("#focusLabel"),
+      apiStatus: document.querySelector("#apiStatus"),
+      lastUpdated: document.querySelector("#lastUpdated"),
+      settingsPanel: document.querySelector("#settingsPanel"),
+      openSettings: document.querySelector("#openSettings"),
+      settingsForm: document.querySelector("#settingsForm"),
+      apiKeyInput: document.querySelector("#apiKeyInput"),
+      leagueIdInput: document.querySelector("#leagueIdInput"),
+      seasonInput: document.querySelector("#seasonInput"),
+      focusTeamInput: document.querySelector("#focusTeamInput"),
+      refreshTop: document.querySelector("#refreshTop"),
+      refreshWatch: document.querySelector("#refreshWatch"),
+      scotlandMatches: document.querySelector("#scotlandMatches"),
+      fixtureList: document.querySelector("#fixtureList"),
+      standingsTable: document.querySelector("#standingsTable"),
+      fixtureSearch: document.querySelector("#fixtureSearch"),
+      scotlandOnly: document.querySelector("#scotlandOnly"),
+      hideFinished: document.querySelector("#hideFinished"),
+      watchTitle: document.querySelector("#watchTitle"),
+      watchSubtitle: document.querySelector("#watchSubtitle"),
+      modalBackdrop: document.querySelector("#modalBackdrop"),
+      modalTitle: document.querySelector("#modalTitle"),
+      modalBody: document.querySelector("#modalBody"),
+      closeModal: document.querySelector("#closeModal")
+    };
+
+    const state = {
+      config: readConfig(),
+      events: [],
+      table: [],
+      nextLeague: [],
+      pastLeague: [],
+      loading: false,
+      error: null
+    };
+
+    function readConfig() {
+      try {
+        return { ...DEFAULTS, ...JSON.parse(localStorage.getItem("wc26ScotlandConfig") || "{}") };
+      } catch {
+        return { ...DEFAULTS };
+      }
+    }
+
+    function saveConfig(config) {
+      localStorage.setItem("wc26ScotlandConfig", JSON.stringify(config));
+    }
+
+    function setStatus(status, detail = "") {
+      dom.apiStatus.textContent = status;
+      if (detail) dom.lastUpdated.textContent = detail;
+    }
+
+    function endpoint(path) {
+      return `${BASE_URL}/${encodeURIComponent(state.config.apiKey)}/${path}`;
+    }
+
+    function cacheKey(url) {
+      return `wc26-cache:${url}`;
+    }
+
+    async function fetchJsonCached(url, { force = false, ttl = CACHE_TTL_MS } = {}) {
+      const key = cacheKey(url);
+      if (!force) {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.savedAt < ttl) return parsed.data;
+        }
+      }
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (response.status === 429) {
+          throw new Error("TheSportsDB rate limit reached. Wait a minute and refresh again.");
+        }
+        if (!response.ok) throw new Error(`API request failed: HTTP ${response.status}`);
+        const data = await response.json();
+        localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data }));
+        return data;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function asArray(value) {
+      if (!value) return [];
+      return Array.isArray(value) ? value.filter(Boolean) : [value].filter(Boolean);
+    }
+
+    function normaliseEvents(payload) {
+      return asArray(payload?.events || payload?.event || payload?.tvevents).filter(event => event && event.idEvent);
+    }
+
+    function normaliseTable(payload) {
+      return asArray(payload?.table || payload?.tables || payload?.standings).filter(Boolean);
+    }
+
+    function uniqueEvents(events) {
+      return [...new Map(events.map(event => [event.idEvent || `${event.dateEvent}-${event.strEvent}`, event])).values()]
+        .sort((a, b) => eventDate(a) - eventDate(b));
+    }
+
+    function includesFocus(event) {
+      const team = state.config.focusTeam.trim().toLowerCase();
+      const haystack = [event.strHomeTeam, event.strAwayTeam, event.strEvent, event.strFilename]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(team);
+    }
+
+    function eventDate(event) {
+      if (event.strTimestamp) return new Date(event.strTimestamp);
+      const date = event.dateEvent || "";
+      const time = event.strTime && event.strTime !== "00:00:00" ? event.strTime : "12:00:00";
+      return new Date(`${date}T${time}Z`);
+    }
+
+    function formatDate(event, options = {}) {
+      const date = eventDate(event);
+      if (Number.isNaN(date.getTime())) return "TBC";
+      return new Intl.DateTimeFormat(undefined, {
+        weekday: options.short ? "short" : "long",
+        day: "numeric",
+        month: options.short ? "short" : "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(date);
+    }
+
+    function formatDateOnly(dateKey) {
+      const date = new Date(`${dateKey}T12:00:00`);
+      if (Number.isNaN(date.getTime())) return "Date TBC";
+      return new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(date);
+    }
+
+    function scoreValue(value) {
+      return value === null || value === undefined || value === "" ? "–" : value;
+    }
+
+    function statusFor(event) {
+      const status = (event.strStatus || "").toLowerCase();
+      const hasScore = event.intHomeScore !== null && event.intHomeScore !== undefined && event.intHomeScore !== "";
+      if (status.includes("match finished") || status === "ft" || hasScore) return { label: "Finished", className: "finished" };
+      if (status.includes("live") || status.includes("1h") || status.includes("2h") || status.includes("ht")) return { label: "Live", className: "live" };
+      return { label: event.strStatus || "Scheduled", className: "scheduled" };
+    }
+
+    function esc(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function teamBadge(url, name) {
+      if (!url) return `<span aria-hidden="true">⚽</span>`;
+      return `<img src="${esc(url)}" alt="${esc(name)} badge" loading="lazy" onerror="this.replaceWith(document.createTextNode('⚽'))" />`;
+    }
+
+    function matchCard(event) {
+      const status = statusFor(event);
+      const isFocus = includesFocus(event);
+      const venue = [event.strVenue, event.strCity].filter(Boolean).join(", ") || "Venue TBC";
+      const round = event.intRound ? `Round ${event.intRound}` : (event.strGroup || event.strRound || event.strLeague || "World Cup");
+      return `
+        <button class="match-card ${isFocus ? "scotland" : ""}" type="button" data-event-id="${esc(event.idEvent)}" aria-label="Open details for ${esc(event.strEvent || "fixture")}">
+          <div class="match-meta">
+            <span>${esc(round)}</span>
+            <span class="status-pill ${status.className}">${esc(status.label)}</span>
+          </div>
+          <div class="teams">
+            <div class="team-row">
+              ${teamBadge(event.strHomeTeamBadge, event.strHomeTeam || "Home team")}
+              <span>${esc(event.strHomeTeam || "Home TBC")}</span>
+              <strong class="score">${scoreValue(event.intHomeScore)}</strong>
+            </div>
+            <div class="team-row">
+              ${teamBadge(event.strAwayTeamBadge, event.strAwayTeam || "Away team")}
+              <span>${esc(event.strAwayTeam || "Away TBC")}</span>
+              <strong class="score">${scoreValue(event.intAwayScore)}</strong>
+            </div>
+          </div>
+          <div class="match-foot">
+            <span>${esc(formatDate(event, { short: true }))}</span>
+            <span>${esc(venue)}</span>
+          </div>
+        </button>
+      `;
+    }
+
+    function renderStats() {
+      const focusMatches = state.events.filter(includesFocus);
+      dom.totalFixtures.textContent = String(state.events.length);
+      dom.scotlandFixtures.textContent = String(focusMatches.length);
+      dom.focusLabel.textContent = `Focus team: ${state.config.focusTeam}`;
+      dom.watchTitle.textContent = `${state.config.focusTeam} fixtures`;
+      dom.watchSubtitle.textContent = `Matches involving ${state.config.focusTeam} are highlighted from the World Cup feed.`;
+    }
+
+    function renderFocusMatches() {
+      const matches = state.events.filter(includesFocus);
+      if (state.loading) {
+        dom.scotlandMatches.innerHTML = `<div class="loading"><span class="spinner"></span> Loading ${esc(state.config.focusTeam)} matches…</div>`;
+        return;
+      }
+      if (state.error) {
+        dom.scotlandMatches.innerHTML = `<div class="error">${esc(state.error)}</div>`;
+        return;
+      }
+      if (!matches.length) {
+        dom.scotlandMatches.innerHTML = `
+          <div class="empty" style="grid-column: 1 / -1;">
+            No ${esc(state.config.focusTeam)} fixtures were found in the selected World Cup feed yet. This can happen before a team qualifies, before fixtures are published, or when the free API feed has limited records. The full tournament feed below will still load whatever TheSportsDB returns.
+          </div>`;
+        return;
+      }
+      dom.scotlandMatches.innerHTML = matches.slice(0, 6).map(matchCard).join("");
+    }
+
+    function getFilteredEvents() {
+      const term = dom.fixtureSearch.value.trim().toLowerCase();
+      return state.events.filter(event => {
+        if (dom.scotlandOnly.checked && !includesFocus(event)) return false;
+        if (dom.hideFinished.checked && statusFor(event).className === "finished") return false;
+        if (!term) return true;
+        const haystack = [
+          event.strEvent, event.strHomeTeam, event.strAwayTeam, event.strVenue,
+          event.strCity, event.strCountry, event.strGroup, event.strRound, event.strLeague
+        ].filter(Boolean).join(" ").toLowerCase();
+        return haystack.includes(term);
+      });
+    }
+
+    function renderFixtures() {
+      if (state.loading) {
+        dom.fixtureList.innerHTML = `<div class="loading"><span class="spinner"></span> Loading World Cup fixtures…</div>`;
+        return;
+      }
+      if (state.error) {
+        dom.fixtureList.innerHTML = `<div class="error">${esc(state.error)}</div>`;
+        return;
+      }
+
+      const events = getFilteredEvents();
+      if (!events.length) {
+        dom.fixtureList.innerHTML = `<div class="empty">No fixtures match the current filters.</div>`;
+        return;
+      }
+
+      const groups = events.reduce((acc, event) => {
+        const key = event.dateEvent || "TBC";
+        acc[key] ||= [];
+        acc[key].push(event);
+        return acc;
+      }, {});
+
+      dom.fixtureList.innerHTML = Object.entries(groups).map(([dateKey, dayEvents]) => `
+        <div class="date-group">
+          <h3 class="date-heading"><span class="spark" aria-hidden="true"></span>${esc(formatDateOnly(dateKey))}</h3>
+          <div class="match-grid">${dayEvents.map(matchCard).join("")}</div>
         </div>
-        <div class="filters" aria-label="Fixture filters">
-          <input id="searchInput" placeholder="Search team, venue, round…" />
-          <select id="roundFilter"><option value="all">All rounds</option></select>
-          <select id="statusFilter"><option value="all">All statuses</option><option value="upcoming">Upcoming</option><option value="completed">Completed</option></select>
+      `).join("");
+    }
+
+    function renderStandings() {
+      if (state.loading) {
+        dom.standingsTable.innerHTML = `<div class="loading"><span class="spinner"></span> Loading standings…</div>`;
+        return;
+      }
+
+      if (!state.table.length) {
+        dom.standingsTable.innerHTML = `
+          <div class="empty">
+            No standings table is currently available from TheSportsDB for league ${esc(state.config.leagueId)} and season ${esc(state.config.season)}.
+            The fixtures and Scotland watch panels can still work without table data.
+          </div>`;
+        return;
+      }
+
+      const rows = [...state.table].sort((a, b) => Number(a.intRank || a.intPosition || 999) - Number(b.intRank || b.intPosition || 999));
+      dom.standingsTable.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pos</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(row => {
+                const teamName = row.strTeam || row.strTeamShort || row.name || "Team";
+                const isFocus = teamName.toLowerCase().includes(state.config.focusTeam.toLowerCase());
+                return `
+                  <tr class="${isFocus ? "scotland-row" : ""}">
+                    <td>${esc(row.intRank || row.intPosition || "–")}</td>
+                    <td><span class="table-team">${teamBadge(row.strTeamBadge || row.strBadge, teamName)} ${esc(teamName)}</span></td>
+                    <td>${esc(row.intPlayed || row.intFormedYear || row.played || "–")}</td>
+                    <td>${esc(row.intWin || row.win || "–")}</td>
+                    <td>${esc(row.intDraw || row.draw || "–")}</td>
+                    <td>${esc(row.intLoss || row.loss || "–")}</td>
+                    <td>${esc(row.intGoalsFor || row.goalsfor || "–")}</td>
+                    <td>${esc(row.intGoalsAgainst || row.goalsagainst || "–")}</td>
+                    <td>${esc(row.intGoalDifference || row.goalsdifference || "–")}</td>
+                    <td><strong>${esc(row.intPoints || row.points || "–")}</strong></td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    function openModal(eventId) {
+      const event = state.events.find(item => String(item.idEvent) === String(eventId));
+      if (!event) return;
+      const status = statusFor(event);
+      dom.modalTitle.textContent = event.strEvent || `${event.strHomeTeam || "Home"} vs ${event.strAwayTeam || "Away"}`;
+      dom.modalBody.innerHTML = `
+        <div class="match-card ${includesFocus(event) ? "scotland" : ""}" style="min-height: unset; margin-bottom: 16px;">
+          <div class="match-meta"><span>${esc(event.strLeague || "FIFA World Cup")}</span><span class="status-pill ${status.className}">${esc(status.label)}</span></div>
+          <div class="teams">
+            <div class="team-row">${teamBadge(event.strHomeTeamBadge, event.strHomeTeam || "Home")}<span>${esc(event.strHomeTeam || "Home TBC")}</span><strong class="score">${scoreValue(event.intHomeScore)}</strong></div>
+            <div class="team-row">${teamBadge(event.strAwayTeamBadge, event.strAwayTeam || "Away")}<span>${esc(event.strAwayTeam || "Away TBC")}</span><strong class="score">${scoreValue(event.intAwayScore)}</strong></div>
+          </div>
         </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Round</th><th>Match</th><th>Venue</th><th>Status</th></tr></thead>
-          <tbody id="fixtureRows"></tbody>
-        </table>
-      </div>
-    </section>
+        <div class="detail-grid">
+          <div class="detail-item"><span>Kick-off</span><strong>${esc(formatDate(event))}</strong></div>
+          <div class="detail-item"><span>Venue</span><strong>${esc([event.strVenue, event.strCity, event.strCountry].filter(Boolean).join(", ") || "TBC")}</strong></div>
+          <div class="detail-item"><span>Round / group</span><strong>${esc(event.strGroup || event.strRound || (event.intRound ? `Round ${event.intRound}` : "TBC"))}</strong></div>
+          <div class="detail-item"><span>Season</span><strong>${esc(event.strSeason || state.config.season)}</strong></div>
+          <div class="detail-item"><span>Event ID</span><strong>${esc(event.idEvent || "—")}</strong></div>
+          <div class="detail-item"><span>Last updated</span><strong>${esc(event.dateEventLocal || event.dateModified || "From API feed")}</strong></div>
+        </div>
+        ${event.strDescriptionEN ? `<p class="panel-subtitle" style="margin-top:18px;">${esc(event.strDescriptionEN)}</p>` : ""}
+        ${event.strVideo ? `<p style="margin-top:18px;"><a class="button" href="${esc(event.strVideo)}" target="_blank" rel="noopener">Watch highlights</a></p>` : ""}
+      `;
+      dom.modalBackdrop.classList.add("open");
+    }
 
-    <section class="panel" id="groups">
-      <div class="section-head">
-        <p class="eyebrow">Groups</p>
-        <h2>Tables and standings</h2>
-        <p class="note">Standings are loaded from the API when available; otherwise they are calculated from completed API results.</p>
-      </div>
-      <div id="groupTables" class="group-grid"></div>
-    </section>
+    function closeModal() {
+      dom.modalBackdrop.classList.remove("open");
+    }
 
-    <section class="panel" id="knockout">
-      <div class="section-head">
-        <p class="eyebrow">Knockout</p>
-        <h2>Route to the final</h2>
-      </div>
-      <div id="bracket" class="bracket"></div>
-    </section>
+    async function loadDashboard({ force = false } = {}) {
+      state.loading = true;
+      state.error = null;
+      setStatus("Loading", "Contacting TheSportsDB…");
+      renderFocusMatches();
+      renderFixtures();
+      renderStandings();
 
-    <section class="panel" id="venues">
-      <div class="section-head">
-        <p class="eyebrow">Venues</p>
-        <h2>Venue guide</h2>
-      </div>
-      <div id="venuesGrid" class="venue-grid"></div>
-    </section>
-  </main>
+      const seasonUrl = endpoint(`eventsseason.php?id=${encodeURIComponent(state.config.leagueId)}&s=${encodeURIComponent(state.config.season)}`);
+      const tableUrl = endpoint(`lookuptable.php?l=${encodeURIComponent(state.config.leagueId)}&s=${encodeURIComponent(state.config.season)}`);
+      const nextUrl = endpoint(`eventsnextleague.php?id=${encodeURIComponent(state.config.leagueId)}`);
+      const pastUrl = endpoint(`eventspastleague.php?id=${encodeURIComponent(state.config.leagueId)}`);
 
-  <footer>Scotland World Cup Centre • Data powered by TheSportsDB</footer>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+      try {
+        const [season, table, next, past] = await Promise.allSettled([
+          fetchJsonCached(seasonUrl, { force }),
+          fetchJsonCached(tableUrl, { force }),
+          fetchJsonCached(nextUrl, { force }),
+          fetchJsonCached(pastUrl, { force })
+        ]);
+
+        const errors = [season, table, next, past]
+          .filter(result => result.status === "rejected")
+          .map(result => result.reason?.message || "Unknown API error");
+
+        if (season.status === "rejected" && next.status === "rejected" && past.status === "rejected") {
+          throw new Error(errors[0] || "TheSportsDB did not return fixture data.");
+        }
+
+        const seasonEvents = season.status === "fulfilled" ? normaliseEvents(season.value) : [];
+        state.nextLeague = next.status === "fulfilled" ? normaliseEvents(next.value) : [];
+        state.pastLeague = past.status === "fulfilled" ? normaliseEvents(past.value) : [];
+        state.events = uniqueEvents([...seasonEvents, ...state.nextLeague, ...state.pastLeague]);
+        state.table = table.status === "fulfilled" ? normaliseTable(table.value) : [];
+
+        if (!state.events.length && errors.length) {
+          state.error = errors[0];
+        }
+
+        setStatus("OK", `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date())}`);
+      } catch (error) {
+        state.error = error.message || "Something went wrong while loading data.";
+        setStatus("Error", state.error);
+      } finally {
+        state.loading = false;
+        renderStats();
+        renderFocusMatches();
+        renderFixtures();
+        renderStandings();
+      }
+    }
+
+    function updateCountdown() {
+      const start = new Date(state.config.tournamentStart);
+      const now = new Date();
+      const diff = start - now;
+
+      if (Number.isNaN(start.getTime())) {
+        dom.countdownValue.textContent = "—";
+        dom.countdownDetail.textContent = "Start date not configured";
+        return;
+      }
+
+      if (diff <= 0) {
+        dom.countdownValue.textContent = "Live";
+        dom.countdownDetail.textContent = "Tournament window has started";
+        return;
+      }
+
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      dom.countdownValue.textContent = `${days}d`;
+      dom.countdownDetail.textContent = `${hours}h until kick-off`;
+    }
+
+    function hydrateSettingsForm() {
+      dom.apiKeyInput.value = state.config.apiKey;
+      dom.leagueIdInput.value = state.config.leagueId;
+      dom.seasonInput.value = state.config.season;
+      dom.focusTeamInput.value = state.config.focusTeam;
+    }
+
+    function bindEvents() {
+      dom.openSettings.addEventListener("click", () => {
+        dom.settingsPanel.hidden = !dom.settingsPanel.hidden;
+        if (!dom.settingsPanel.hidden) dom.settingsPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+
+      dom.settingsForm.addEventListener("submit", event => {
+        event.preventDefault();
+        state.config = {
+          ...state.config,
+          apiKey: dom.apiKeyInput.value.trim() || DEFAULTS.apiKey,
+          leagueId: dom.leagueIdInput.value.trim() || DEFAULTS.leagueId,
+          season: dom.seasonInput.value.trim() || DEFAULTS.season,
+          focusTeam: dom.focusTeamInput.value.trim() || DEFAULTS.focusTeam
+        };
+        saveConfig(state.config);
+        hydrateSettingsForm();
+        renderStats();
+        loadDashboard({ force: true });
+      });
+
+      [dom.refreshTop, dom.refreshWatch].forEach(button => {
+        button.addEventListener("click", () => loadDashboard({ force: true }));
+      });
+
+      [dom.fixtureSearch, dom.scotlandOnly, dom.hideFinished].forEach(control => {
+        control.addEventListener("input", renderFixtures);
+        control.addEventListener("change", renderFixtures);
+      });
+
+      document.addEventListener("click", event => {
+        const card = event.target.closest(".match-card[data-event-id]");
+        if (card) openModal(card.dataset.eventId);
+      });
+
+      dom.closeModal.addEventListener("click", closeModal);
+      dom.modalBackdrop.addEventListener("click", event => {
+        if (event.target === dom.modalBackdrop) closeModal();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeModal();
+      });
+    }
+
+    hydrateSettingsForm();
+    bindEvents();
+    updateCountdown();
+    setInterval(updateCountdown, 60 * 1000);
+    loadDashboard();
+  </script>
 </body>
 </html>
