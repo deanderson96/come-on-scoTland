@@ -7,6 +7,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 ## What is included
 
 - Scotland-focused hero section
+- Decorative translucent player-name background
 - Tournament key info
 - API-driven fixture and result list
 - Scotland fixture filter
@@ -17,6 +18,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Europe/London kick-off rendering for BST tournament dates
 - Automatic 5-minute refresh checks while the page is visible
 - Browser cache fallback if fresh API requests fail
+- Live/result status handling for in-progress matches
 - Mobile responsive layout
 - Accessible semantic HTML
 - No backend
@@ -31,7 +33,9 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 ├── styles.css
 ├── background.css
 ├── standings.css
+├── polish.css
 ├── script.js
+├── polish.js
 └── README.md
 ```
 
@@ -49,7 +53,7 @@ The JavaScript fetches and merges tournament data from multiple TheSportsDB endp
 
 The responses are de-duplicated in the browser using TheSportsDB event IDs first, then fixture date/time/team details.
 
-The main configuration is in `script.js`:
+The main configuration is in `script.js`, with production polish overrides in `polish.js`:
 
 ```js
 const CONFIG = {
@@ -57,7 +61,7 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v7",
+  cacheKey: "scotland-2026-world-cup-cache-v8",
   cacheMinutes: 5,
   refreshMinutes: 5,
   timeoutMs: 10000,
@@ -71,8 +75,10 @@ const CONFIG = {
 
 The site checks for fresh data automatically:
 
-- when a visitor opens the page, and
-- every 5 minutes while the page remains open and visible.
+- when a visitor opens the page,
+- every 5 minutes while the page remains open and visible,
+- when the tab becomes visible again, and
+- when the browser comes back online.
 
 Fresh API requests are made only when:
 
@@ -108,6 +114,14 @@ All displayed fixture times are rendered in **Europe/London** time.
 The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window, Europe/London displays as **BST**.
 
 No manual display offset is currently applied.
+
+## Match status handling
+
+The app displays a match as **Live** when TheSportsDB reports an in-play status such as live, first half, second half, half-time, extra time or penalties.
+
+Finished statuses such as full time, after extra time and after penalties display as **Result**.
+
+If TheSportsDB provides a score but no status, the app uses the fixture kick-off window to avoid marking an in-progress match as a final result too early.
 
 ## Last updated
 
@@ -199,6 +213,9 @@ Core layout controls are split across:
 styles.css       Main layout, hero, cards, fixtures, footer
 background.css   Decorative hero name scramble
 standings.css    Compact standings tables and Saltire header mark
+polish.css       Interaction polish, status badges and finishing touches
+script.js        API client, rendering and data processing
+polish.js        Production behaviour overrides and live-status refinements
 ```
 
 ## Credits
