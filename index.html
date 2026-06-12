@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#071a3d" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="background.css" />
+  <link rel="stylesheet" href="social.css" />
   <style>
     :focus-visible {
       outline: 3px solid var(--sky-300);
@@ -66,6 +67,7 @@
         <li><a href="#fixtures">Fixtures</a></li>
         <li><a href="#groups">Groups</a></li>
         <li><a href="#knockout">Knockout</a></li>
+        <li><a href="#scotlandnt">ScotlandNT</a></li>
         <li><a href="#info">Key info</a></li>
       </ul>
     </nav>
@@ -210,6 +212,18 @@
 
       <div class="shell knockout-grid" id="knockout-grid" aria-label="Knockout stage fixtures"></div>
     </section>
+
+    <section class="section social-section" id="scotlandnt" aria-labelledby="scotlandnt-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">ScotlandNT</p>
+        <h2 id="scotlandnt-title">Posts by ScotlandNT</h2>
+        <p>
+          Latest public posts from the Scotland national team account.
+        </p>
+      </div>
+
+      <div class="shell timeline-card" id="scotlandnt-timeline" aria-label="Posts by ScotlandNT"></div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -234,6 +248,7 @@
     </div>
   </footer>
 
+  <script src="social.js" defer></script>
   <script src="script.js" defer></script>
 </body>
 </html>
