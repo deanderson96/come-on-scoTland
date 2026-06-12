@@ -19,6 +19,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Accessible semantic HTML
 - No backend
 - No build step
+- No manually maintained fixture arrays
 
 ## File structure
 
@@ -34,10 +35,15 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 
 The site uses TheSportsDB as the source of tournament data.
 
-The JavaScript fetches:
+The JavaScript fetches and merges tournament data from multiple TheSportsDB endpoints so the fixture list is not limited to a single season response:
 
-- World Cup 2026 fixtures/results using `eventsseason.php`
-- World Cup 2026 standings using `lookuptable.php`
+- `eventsseason.php` for World Cup 2026 season events
+- `eventspastleague.php` for recently completed World Cup events
+- `eventsnextleague.php` for upcoming World Cup events
+- `eventsround.php` for rounds 1–12 of the 2026 World Cup season
+- `lookuptable.php` for standings when available
+
+The responses are de-duplicated in the browser using TheSportsDB event IDs first, then fixture date/time/team details.
 
 The configuration is in `script.js`:
 
@@ -47,8 +53,10 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
+  cacheKey: "scotland-2026-world-cup-cache-v2",
   cacheMinutes: 15,
-  timeZone: "Europe/London"
+  timeZone: "Europe/London",
+  roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
 };
 ```
 
@@ -59,10 +67,13 @@ By default, the site makes fresh API requests only when:
 - there is no cached tournament data in the visitor’s browser, or
 - the cached data is older than 15 minutes.
 
-A fresh refresh makes up to 2 API requests:
+A fresh refresh can make up to 16 API requests:
 
 1. `eventsseason.php`
-2. `lookuptable.php`
+2. `eventspastleague.php`
+3. `eventsnextleague.php`
+4. `eventsround.php` for rounds 1–12
+5. `lookuptable.php`
 
 If a fresh request fails, the site uses the most recent successful cached response from the visitor’s browser.
 
@@ -82,7 +93,7 @@ Because this is a static GitHub Pages site, anything in `script.js` is visible i
 
 All displayed fixture times are rendered in **Europe/London** time.
 
-During the tournament window this displays as **BST**, so a fixture timestamp of `01:00 UTC` displays as:
+The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window this displays as **BST**, so a fixture timestamp of `01:00 UTC` displays as:
 
 ```text
 2:00am BST
@@ -156,6 +167,16 @@ Change this value in `script.js`:
 ```js
 cacheMinutes: 15
 ```
+
+### Round probing
+
+The app currently probes rounds 1–12:
+
+```js
+roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
+```
+
+Increase this only if TheSportsDB starts publishing tournament events under additional numeric round values.
 
 ### Layout
 
