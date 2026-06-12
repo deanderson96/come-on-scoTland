@@ -3,30 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Scotland 2026 — World Cup Fan Hub</title>
+  <title>Scotland 2026 — World Cup Hub</title>
   <meta
     name="description"
-    content="A modern-retro Scotland FIFA World Cup 2026 fan site with fixtures, squad cards, group standings, news and tournament context."
+    content="A modern-retro Scotland-focused FIFA World Cup 2026 hub with groups, fixtures, standings and knockout path."
   />
   <meta name="theme-color" content="#071a3d" />
-
-  <meta property="og:title" content="Scotland 2026 — World Cup Fan Hub" />
-  <meta property="og:description" content="Fixtures, squad, group table and Scotland-focused World Cup updates." />
-  <meta property="og:type" content="website" />
-
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header" aria-label="Site header">
+  <header class="site-header">
     <nav class="nav shell" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Scotland 2026 home">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span>
           <strong>Scotland 2026</strong>
-          <small>Tartan tournament hub</small>
+          <small>World Cup Hub</small>
         </span>
       </a>
 
@@ -39,10 +34,9 @@
 
       <ul class="nav-menu" id="nav-menu">
         <li><a href="#fixtures">Fixtures</a></li>
-        <li><a href="#squad">Squad</a></li>
-        <li><a href="#standings">Group</a></li>
-        <li><a href="#news">Updates</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#groups">Groups</a></li>
+        <li><a href="#knockout">Knockout</a></li>
+        <li><a href="#info">Key info</a></li>
       </ul>
     </nav>
   </header>
@@ -51,49 +45,52 @@
     <section class="hero section" id="top">
       <div class="shell hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">FIFA World Cup 2026 • Scotland fan microsite</p>
-          <h1>Scotland’s World Cup story, built for the Tartan Army.</h1>
+          <p class="eyebrow">FIFA World Cup 2026 • BST fixture hub</p>
+          <h1>Scotland’s World Cup, tracked in proper UK time.</h1>
           <p class="hero-lede">
-            A polished, lightweight hub for tracking Scotland fixtures, squad notes,
-            group standings and matchday updates across the 2026 tournament.
+            A Scotland-first tournament hub covering every group, every fixture,
+            the knockout route and key matchday details — styled with a modern-retro
+            Tartan Army feel.
           </p>
 
-          <div class="hero-actions" aria-label="Primary actions">
+          <div class="hero-actions">
             <a class="button button-primary" href="#fixtures">View Fixtures</a>
-            <a class="button button-secondary" href="#squad">Meet the Squad</a>
+            <a class="button button-secondary" href="#groups">View Groups</a>
           </div>
 
-          <div class="data-ribbon" id="api-banner" role="status" aria-live="polite">
-            <span class="pulse" aria-hidden="true"></span>
-            <span>Preparing live data with fallback coverage.</span>
-          </div>
+          <p class="last-updated-pill">
+            Last updated:
+            <time id="hero-last-updated" datetime="2026-06-12T12:00:00+01:00">
+              12 Jun 2026, 12:00 BST
+            </time>
+          </p>
         </div>
 
-        <aside class="hero-card" aria-label="Tournament snapshot">
+        <aside class="hero-card" aria-label="Scotland tournament snapshot">
           <div class="scoreboard">
             <div class="scoreboard-top">
               <span>Group C</span>
-              <span>2026</span>
+              <span>BST</span>
             </div>
 
             <div class="scoreboard-teams">
               <span>SCO</span>
-              <strong>Road to kick-off</strong>
-              <span>WC</span>
+              <strong>Scotland fixtures</strong>
+              <span>26</span>
             </div>
 
-            <div class="scoreboard-grid" aria-label="Key facts">
+            <div class="scoreboard-grid">
               <div>
-                <span>Host nations</span>
-                <strong>Canada • Mexico • USA</strong>
+                <span>Next match</span>
+                <strong>Haiti v Scotland</strong>
               </div>
               <div>
-                <span>Focus</span>
-                <strong>Fixtures • Squad • Group</strong>
+                <span>Kick-off</span>
+                <strong>14 Jun • 2:00am BST</strong>
               </div>
               <div>
-                <span>Style</span>
-                <strong>Modern-retro Scotland</strong>
+                <span>Group opponents</span>
+                <strong>Brazil • Morocco • Haiti</strong>
               </div>
             </div>
           </div>
@@ -103,138 +100,87 @@
       <div class="tartan-strip" aria-hidden="true"></div>
     </section>
 
+    <section class="section quick-info" id="info" aria-labelledby="info-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Tournament snapshot</p>
+        <h2 id="info-title">World Cup 2026 key info</h2>
+        <p>
+          A quick tournament overview for Scotland supporters, with all times shown in BST.
+        </p>
+      </div>
+
+      <div class="shell stat-grid">
+        <article class="stat-card">
+          <span>Hosts</span>
+          <strong>USA • Canada • Mexico</strong>
+          <p>Matches are staged across North America.</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Format</span>
+          <strong>48 teams</strong>
+          <p>12 groups of four teams.</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Progression</span>
+          <strong>32 advance</strong>
+          <p>Top two from each group plus eight best third-placed teams.</p>
+        </article>
+
+        <article class="stat-card">
+          <span>Final</span>
+          <strong>19 Jul • 8:00pm BST</strong>
+          <p>Match 104 in New Jersey.</p>
+        </article>
+      </div>
+    </section>
+
     <section class="section" id="fixtures" aria-labelledby="fixtures-title">
       <div class="shell section-heading">
         <p class="eyebrow">Match centre</p>
         <h2 id="fixtures-title">Fixtures & results</h2>
         <p>
-          Live data is attempted through TheSportsDB where possible. If an API key,
-          endpoint, rate limit or data record is unavailable, curated fallback data is shown.
+          Browse Scotland’s fixtures, the full group stage and the knockout rounds.
+          All kick-off times are displayed as BST.
         </p>
+      </div>
+
+      <div class="shell toolbar" aria-label="Fixture filters">
+        <button class="filter-button is-active" type="button" data-filter="all">All fixtures</button>
+        <button class="filter-button" type="button" data-filter="scotland">Scotland</button>
+        <button class="filter-button" type="button" data-filter="group">Group stage</button>
+        <button class="filter-button" type="button" data-filter="knockout">Knockout</button>
       </div>
 
       <div class="shell">
-        <div class="panel-status" id="fixtures-status" role="status" aria-live="polite">
-          Loading fixtures…
-        </div>
-        <div class="fixture-grid" id="fixtures-grid" aria-label="Scotland fixtures"></div>
+        <div class="fixture-list" id="fixture-list" aria-label="World Cup fixtures"></div>
       </div>
     </section>
 
-    <section class="section section-navy" id="squad" aria-labelledby="squad-title">
+    <section class="section section-navy" id="groups" aria-labelledby="groups-title">
       <div class="shell section-heading">
-        <p class="eyebrow">Player cards</p>
-        <h2 id="squad-title">Scotland squad</h2>
+        <p class="eyebrow">Groups A-L</p>
+        <h2 id="groups-title">Groups & standings</h2>
         <p>
-          Squad cards show name, position, club and player imagery where live data provides it.
-          Fallback cards use simple generated crests so the layout always remains complete.
+          Current group tables, with Scotland highlighted in Group C.
         </p>
       </div>
 
-      <div class="shell">
-        <div class="panel-status panel-status-dark" id="squad-status" role="status" aria-live="polite">
-          Loading squad…
-        </div>
-        <div class="squad-grid" id="squad-grid" aria-label="Scotland squad cards"></div>
-      </div>
+      <div class="shell groups-grid" id="groups-grid" aria-label="World Cup group tables"></div>
     </section>
 
-    <section class="section" id="standings" aria-labelledby="standings-title">
+    <section class="section" id="knockout" aria-labelledby="knockout-title">
       <div class="shell section-heading">
-        <p class="eyebrow">Group watch</p>
-        <h2 id="standings-title">Group table</h2>
+        <p class="eyebrow">Route to the final</p>
+        <h2 id="knockout-title">Knockout path</h2>
         <p>
-          A compact standings table for Scotland’s group. Update the fallback rows in
-          <code>script.js</code> if official groups, scores or API records change.
+          The 2026 tournament introduces a Round of 32 before the last 16, quarter-finals,
+          semi-finals, bronze final and final.
         </p>
       </div>
 
-      <div class="shell table-wrap">
-        <div class="panel-status" id="standings-status" role="status" aria-live="polite">
-          Loading standings…
-        </div>
-
-        <div class="responsive-table" id="standings-table" aria-label="Group standings"></div>
-      </div>
-    </section>
-
-    <section class="section" id="news" aria-labelledby="news-title">
-      <div class="shell section-heading">
-        <p class="eyebrow">Latest updates</p>
-        <h2 id="news-title">Tournament notebook</h2>
-        <p>
-          Editorial cards for Scotland supporters. These are intentionally static and easy to edit.
-        </p>
-      </div>
-
-      <div class="shell news-grid">
-        <article class="news-card">
-          <span class="tag">Matchday</span>
-          <h3>Boston base sets the tone</h3>
-          <p>
-            Scotland’s opening chapter is framed around preparation, travelling support and
-            a group-stage test that rewards composure as much as ambition.
-          </p>
-          <a href="#fixtures" aria-label="Read fixtures for Boston base update">View fixtures</a>
-        </article>
-
-        <article class="news-card">
-          <span class="tag">Squad</span>
-          <h3>Experience meets energy</h3>
-          <p>
-            The player pool blends senior tournament know-how with direct, modern attacking options —
-            the kind of balance supporters hope can travel well.
-          </p>
-          <a href="#squad" aria-label="View squad cards">Meet the squad</a>
-        </article>
-
-        <article class="news-card">
-          <span class="tag">Fan guide</span>
-          <h3>A clean hub for quick checks</h3>
-          <p>
-            Fixtures, squad notes and standings are kept lightweight so the site works well on mobile
-            before, during and after matchdays.
-          </p>
-          <a href="#about" aria-label="Read about this website">About the site</a>
-        </article>
-      </div>
-    </section>
-
-    <section class="section about-section" id="about" aria-labelledby="about-title">
-      <div class="shell about-grid">
-        <div>
-          <p class="eyebrow">About</p>
-          <h2 id="about-title">A Scotland-first World Cup microsite.</h2>
-          <p>
-            This static website is designed for GitHub Pages and built with plain HTML, CSS and JavaScript.
-            It attempts to enhance the experience with public football data from TheSportsDB while keeping
-            a complete fallback experience for reliability.
-          </p>
-          <p>
-            The 2026 FIFA World Cup is staged across the United States, Canada and Mexico. This site keeps
-            the focus on Scotland: fixtures, player cards, group context and supporter-friendly updates.
-          </p>
-        </div>
-
-        <div class="about-list" aria-label="Technical highlights">
-          <div>
-            <strong>No backend</strong>
-            <span>Runs as a static site from GitHub Pages.</span>
-          </div>
-          <div>
-            <strong>Resilient data</strong>
-            <span>Live API attempts with graceful fallback rendering.</span>
-          </div>
-          <div>
-            <strong>Responsive</strong>
-            <span>Mobile-first cards, tables and navigation.</span>
-          </div>
-          <div>
-            <strong>Accessible</strong>
-            <span>Semantic landmarks, skip link, live regions and keyboard-friendly controls.</span>
-          </div>
-        </div>
-      </div>
+      <div class="shell knockout-grid" id="knockout-grid" aria-label="Knockout stage fixtures"></div>
     </section>
   </main>
 
@@ -242,23 +188,22 @@
     <div class="shell footer-grid">
       <div>
         <strong>Scotland 2026</strong>
-        <p>A fan-made static microsite for Scotland supporters.</p>
+        <p>A fan-made World Cup hub for Scotland supporters.</p>
       </div>
 
       <div>
         <p>
-          Football data powered by
-          <a href="https://www.thesportsdb.com/" rel="noopener noreferrer">TheSportsDB</a>.
+          Last updated:
+          <time id="footer-last-updated" datetime="2026-06-12T12:00:00+01:00">
+            12 Jun 2026, 12:00 BST
+          </time>
         </p>
-        <p>
-          Built for GitHub Pages. Last data refresh:
-          <time id="last-updated" datetime="">Not yet refreshed</time>.
-        </p>
+        <p>All displayed kick-off times use BST.</p>
       </div>
 
       <div>
         <p>&copy; <span id="year"></span> Scotland 2026 Fan Hub.</p>
-        <p>Not affiliated with FIFA, UEFA, the Scottish FA or TheSportsDB.</p>
+        <p>Not affiliated with FIFA, UEFA or the Scottish FA.</p>
       </div>
     </div>
   </footer>
