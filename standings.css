@@ -1,0 +1,30 @@
+.group-card {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.group-card table {
+  min-width: 520px;
+}
+
+.group-card th,
+.group-card td {
+  padding-inline: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.group-card th:first-child,
+.group-card td:first-child {
+  min-width: 130px;
+}
+
+.group-empty {
+  text-align: left !important;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 720px) {
+  .group-card table {
+    min-width: 560px;
+  }
+}
