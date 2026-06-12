@@ -1,131 +1,231 @@
-/**
- * Scotland 2026 Fan Hub
- * Plain JavaScript, GitHub Pages-friendly.
- *
- * TheSportsDB docs:
- * v1 base: https://www.thesportsdb.com/api/v1/json
- * Free demo key: 123
- * Premium users can replace API_KEY below.
- */
+const SITE_LAST_UPDATED = "2026-06-12T12:00:00+01:00";
 
-const CONFIG = {
-  API_BASE_URL: "https://www.thesportsdb.com/api/v1/json",
-  API_KEY: "123",
+const GROUPS = [
+  {
+    name: "Group A",
+    teams: [
+      { team: "Mexico", w: 1, d: 0, l: 0, gf: 2, ga: 0, pts: 3 },
+      { team: "South Korea", w: 1, d: 0, l: 0, gf: 2, ga: 1, pts: 3 },
+      { team: "Czechia", w: 0, d: 0, l: 1, gf: 1, ga: 2, pts: 0 },
+      { team: "South Africa", w: 0, d: 0, l: 1, gf: 0, ga: 2, pts: 0 }
+    ]
+  },
+  {
+    name: "Group B",
+    teams: ["Canada", "Bosnia & Herzegovina", "Qatar", "Switzerland"].map(blankTeam)
+  },
+  {
+    name: "Group C",
+    teams: ["Brazil", "Morocco", "Haiti", "Scotland"].map(blankTeam)
+  },
+  {
+    name: "Group D",
+    teams: ["United States", "Paraguay", "Australia", "Türkiye"].map(blankTeam)
+  },
+  {
+    name: "Group E",
+    teams: ["Germany", "Curaçao", "Ivory Coast", "Ecuador"].map(blankTeam)
+  },
+  {
+    name: "Group F",
+    teams: ["Netherlands", "Japan", "Sweden", "Tunisia"].map(blankTeam)
+  },
+  {
+    name: "Group G",
+    teams: ["Belgium", "Egypt", "Iran", "New Zealand"].map(blankTeam)
+  },
+  {
+    name: "Group H",
+    teams: ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"].map(blankTeam)
+  },
+  {
+    name: "Group I",
+    teams: ["France", "Senegal", "Iraq", "Norway"].map(blankTeam)
+  },
+  {
+    name: "Group J",
+    teams: ["Argentina", "Algeria", "Austria", "Jordan"].map(blankTeam)
+  },
+  {
+    name: "Group K",
+    teams: ["Portugal", "DR Congo", "Uzbekistan", "Colombia"].map(blankTeam)
+  },
+  {
+    name: "Group L",
+    teams: ["England", "Croatia", "Ghana", "Panama"].map(blankTeam)
+  }
+];
 
-  /**
-   * Optional tuning:
-   * - SCOTLAND_TEAM_ID can be left blank. The app will try searchteams.php?t=Scotland.
-   * - WORLD_CUP_LEAGUE_ID is commonly listed as 4429 for FIFA World Cup data.
-   *   Change this if TheSportsDB uses a different 2026 tournament record.
-   */
-  SCOTLAND_TEAM_ID: "",
-  WORLD_CUP_LEAGUE_ID: "4429",
-  WORLD_CUP_SEASON: "2026",
+const FIXTURES = [
+  // Played / early fixtures
+  result("Group A", "2026-06-11", "20:00", "Mexico", "South Africa", "Mexico City, Mexico", "2-0"),
+  result("Group A", "2026-06-12", "03:00", "South Korea", "Czechia", "Zapopan, Mexico", "2-1"),
+  fixture("Group B", "2026-06-12", "20:00", "Canada", "Bosnia & Herzegovina", "Toronto, Canada"),
 
-  REQUEST_TIMEOUT_MS: 9000,
-  ENABLE_LIVE_API: true
-};
+  // Saturday, June 13
+  fixture("Group D", "2026-06-13", "02:00", "United States", "Paraguay", "Los Angeles, USA"),
+  fixture("Group B", "2026-06-13", "20:00", "Qatar", "Switzerland", "Santa Clara, USA"),
+  fixture("Group C", "2026-06-13", "23:00", "Brazil", "Morocco", "New Jersey, USA"),
 
-const FALLBACK = {
-  fixtures: [
-    {
-      opponent: "Haiti",
-      homeTeam: "Haiti",
-      awayTeam: "Scotland",
-      date: "2026-06-14T02:00:00+01:00",
-      venue: "Boston Stadium",
-      stage: "Group C",
-      status: "Scheduled",
-      homeScore: null,
-      awayScore: null
-    },
-    {
-      opponent: "Morocco",
-      homeTeam: "Scotland",
-      awayTeam: "Morocco",
-      date: "2026-06-19T23:00:00+01:00",
-      venue: "Boston Stadium",
-      stage: "Group C",
-      status: "Scheduled",
-      homeScore: null,
-      awayScore: null
-    },
-    {
-      opponent: "Brazil",
-      homeTeam: "Scotland",
-      awayTeam: "Brazil",
-      date: "2026-06-24T23:00:00+01:00",
-      venue: "Miami Stadium",
-      stage: "Group C",
-      status: "Scheduled",
-      homeScore: null,
-      awayScore: null
-    }
-  ],
+  // Sunday, June 14
+  fixture("Group C", "2026-06-14", "02:00", "Haiti", "Scotland", "Foxborough, USA"),
+  fixture("Group D", "2026-06-14", "05:00", "Australia", "Türkiye", "Vancouver, Canada"),
+  fixture("Group E", "2026-06-14", "18:00", "Germany", "Curaçao", "Houston, USA"),
+  fixture("Group F", "2026-06-14", "21:00", "Netherlands", "Japan", "Arlington, USA"),
 
-  squad: [
-    { name: "Craig Gordon", position: "Goalkeeper", club: "Hearts" },
-    { name: "Angus Gunn", position: "Goalkeeper", club: "Nottingham Forest" },
-    { name: "Liam Kelly", position: "Goalkeeper", club: "Rangers" },
-    { name: "Grant Hanley", position: "Defender", club: "Hibernian" },
-    { name: "Jack Hendry", position: "Defender", club: "Al-Ettifaq" },
-    { name: "Aaron Hickey", position: "Defender", club: "Brentford" },
-    { name: "Dom Hyam", position: "Defender", club: "Wrexham" },
-    { name: "Scott McKenna", position: "Defender", club: "Dinamo Zagreb" },
-    { name: "Nathan Patterson", position: "Defender", club: "Everton" },
-    { name: "Anthony Ralston", position: "Defender", club: "Celtic" },
-    { name: "Andy Robertson", position: "Defender", club: "Liverpool" },
-    { name: "John Souttar", position: "Defender", club: "Rangers" },
-    { name: "Kieran Tierney", position: "Defender", club: "Celtic" },
-    { name: "Ryan Christie", position: "Midfielder", club: "AFC Bournemouth" },
-    { name: "Findlay Curtis", position: "Midfielder", club: "Kilmarnock" },
-    { name: "Lewis Ferguson", position: "Midfielder", club: "Bologna" },
-    { name: "Ben Gannon-Doak", position: "Midfielder", club: "Liverpool" },
-    { name: "Tyler Fletcher", position: "Midfielder", club: "Manchester United" },
-    { name: "John McGinn", position: "Midfielder", club: "Aston Villa" },
-    { name: "Kenny McLean", position: "Midfielder", club: "Norwich City" },
-    { name: "Scott McTominay", position: "Midfielder", club: "Napoli" },
-    { name: "Ché Adams", position: "Forward", club: "Torino" },
-    { name: "Lyndon Dykes", position: "Forward", club: "Charlton Athletic" },
-    { name: "George Hirst", position: "Forward", club: "Ipswich Town" },
-    { name: "Lawrence Shankland", position: "Forward", club: "Hearts" },
-    { name: "Ross Stewart", position: "Forward", club: "Southampton" }
-  ],
+  // Monday, June 15
+  fixture("Group E", "2026-06-15", "00:00", "Ivory Coast", "Ecuador", "Philadelphia, USA"),
+  fixture("Group F", "2026-06-15", "03:00", "Sweden", "Tunisia", "Guadalupe, Mexico"),
+  fixture("Group H", "2026-06-15", "17:00", "Spain", "Cabo Verde", "Atlanta, USA"),
+  fixture("Group G", "2026-06-15", "20:00", "Belgium", "Egypt", "Seattle, USA"),
+  fixture("Group H", "2026-06-15", "23:00", "Saudi Arabia", "Uruguay", "Miami, USA"),
 
-  standings: [
-    { team: "Brazil", played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 },
-    { team: "Morocco", played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 },
-    { team: "Haiti", played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 },
-    { team: "Scotland", played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 }
-  ]
-};
+  // Tuesday, June 16
+  fixture("Group G", "2026-06-16", "02:00", "Iran", "New Zealand", "Los Angeles, USA"),
+  fixture("Group I", "2026-06-16", "20:00", "France", "Senegal", "New Jersey, USA"),
+  fixture("Group I", "2026-06-16", "23:00", "Iraq", "Norway", "Foxborough, USA"),
+
+  // Wednesday, June 17
+  fixture("Group J", "2026-06-17", "02:00", "Argentina", "Algeria", "Kansas City, USA"),
+  fixture("Group J", "2026-06-17", "05:00", "Austria", "Jordan", "Santa Clara, USA"),
+  fixture("Group K", "2026-06-17", "18:00", "Portugal", "DR Congo", "Houston, USA"),
+  fixture("Group L", "2026-06-17", "21:00", "England", "Croatia", "Arlington, USA"),
+
+  // Thursday, June 18
+  fixture("Group L", "2026-06-18", "00:00", "Ghana", "Panama", "Toronto, Canada"),
+  fixture("Group K", "2026-06-18", "03:00", "Uzbekistan", "Colombia", "Mexico City, Mexico"),
+  fixture("Group A", "2026-06-18", "17:00", "Czechia", "South Africa", "Atlanta, USA"),
+  fixture("Group B", "2026-06-18", "20:00", "Switzerland", "Bosnia & Herzegovina", "Los Angeles, USA"),
+  fixture("Group B", "2026-06-18", "23:00", "Canada", "Qatar", "Vancouver, Canada"),
+
+  // Friday, June 19
+  fixture("Group A", "2026-06-19", "02:00", "Mexico", "South Korea", "Zapopan, Mexico"),
+  fixture("Group D", "2026-06-19", "20:00", "United States", "Australia", "Seattle, USA"),
+  fixture("Group C", "2026-06-19", "23:00", "Scotland", "Morocco", "Foxborough, USA"),
+
+  // Saturday, June 20
+  fixture("Group C", "2026-06-20", "01:30", "Brazil", "Haiti", "Philadelphia, USA"),
+  fixture("Group D", "2026-06-20", "04:00", "Türkiye", "Paraguay", "Santa Clara, USA"),
+  fixture("Group F", "2026-06-20", "18:00", "Netherlands", "Sweden", "Houston, USA"),
+  fixture("Group E", "2026-06-20", "21:00", "Germany", "Ivory Coast", "Toronto, Canada"),
+
+  // Sunday, June 21
+  fixture("Group E", "2026-06-21", "01:00", "Ecuador", "Curaçao", "Kansas City, USA"),
+  fixture("Group F", "2026-06-21", "05:00", "Tunisia", "Japan", "Guadalupe, Mexico"),
+  fixture("Group H", "2026-06-21", "17:00", "Spain", "Saudi Arabia", "Atlanta, USA"),
+  fixture("Group G", "2026-06-21", "20:00", "Belgium", "Iran", "Los Angeles, USA"),
+  fixture("Group H", "2026-06-21", "23:00", "Uruguay", "Cabo Verde", "Miami, USA"),
+
+  // Monday, June 22
+  fixture("Group G", "2026-06-22", "02:00", "New Zealand", "Egypt", "Vancouver, Canada"),
+  fixture("Group J", "2026-06-22", "18:00", "Argentina", "Austria", "Arlington, USA"),
+  fixture("Group I", "2026-06-22", "22:00", "France", "Iraq", "Philadelphia, USA"),
+
+  // Tuesday, June 23
+  fixture("Group I", "2026-06-23", "01:00", "Norway", "Senegal", "Toronto, Canada"),
+  fixture("Group J", "2026-06-23", "04:00", "Jordan", "Algeria", "Santa Clara, USA"),
+  fixture("Group K", "2026-06-23", "18:00", "Portugal", "Uzbekistan", "Houston, USA"),
+  fixture("Group L", "2026-06-23", "21:00", "England", "Ghana", "Foxborough, USA"),
+
+  // Wednesday, June 24
+  fixture("Group L", "2026-06-24", "00:00", "Panama", "Croatia", "Foxborough, USA"),
+  fixture("Group K", "2026-06-24", "03:00", "Colombia", "DR Congo", "Zapopan, Mexico"),
+  fixture("Group B", "2026-06-24", "20:00", "Switzerland", "Canada", "Vancouver, Canada"),
+  fixture("Group B", "2026-06-24", "20:00", "Bosnia & Herzegovina", "Qatar", "Seattle, USA"),
+  fixture("Group C", "2026-06-24", "23:00", "Morocco", "Haiti", "Atlanta, USA"),
+  fixture("Group C", "2026-06-24", "23:00", "Scotland", "Brazil", "Miami, USA"),
+
+  // Thursday, June 25
+  fixture("Group A", "2026-06-25", "02:00", "South Africa", "South Korea", "Guadalupe, Mexico"),
+  fixture("Group A", "2026-06-25", "02:00", "Czechia", "Mexico", "Mexico City, Mexico"),
+  fixture("Group E", "2026-06-25", "21:00", "Curaçao", "Ivory Coast", "Philadelphia, USA"),
+  fixture("Group E", "2026-06-25", "21:00", "Ecuador", "Germany", "New Jersey, USA"),
+
+  // Friday, June 26
+  fixture("Group F", "2026-06-26", "00:00", "Tunisia", "Netherlands", "Kansas City, USA"),
+  fixture("Group F", "2026-06-26", "00:00", "Japan", "Sweden", "Arlington, USA"),
+  fixture("Group D", "2026-06-26", "03:00", "Türkiye", "United States", "Los Angeles, USA"),
+  fixture("Group D", "2026-06-26", "03:00", "Paraguay", "Australia", "Santa Clara, USA"),
+  fixture("Group I", "2026-06-26", "20:00", "Norway", "France", "Foxborough, USA"),
+  fixture("Group I", "2026-06-26", "20:00", "Senegal", "Iraq", "Toronto, Canada"),
+
+  // Saturday, June 27
+  fixture("Group H", "2026-06-27", "01:00", "Cabo Verde", "Saudi Arabia", "Houston, USA"),
+  fixture("Group H", "2026-06-27", "01:00", "Uruguay", "Spain", "Zapopan, Mexico"),
+  fixture("Group G", "2026-06-27", "04:00", "New Zealand", "Belgium", "Vancouver, Canada"),
+  fixture("Group G", "2026-06-27", "04:00", "Egypt", "Iran", "Seattle, USA"),
+  fixture("Group L", "2026-06-27", "22:00", "Panama", "England", "New Jersey, USA"),
+  fixture("Group L", "2026-06-27", "22:00", "Croatia", "Ghana", "Philadelphia, USA"),
+
+  // Sunday, June 28
+  fixture("Group K", "2026-06-28", "00:30", "Colombia", "Portugal", "Miami, USA"),
+  fixture("Group K", "2026-06-28", "00:30", "DR Congo", "Uzbekistan", "Atlanta, USA"),
+  fixture("Group J", "2026-06-28", "03:00", "Algeria", "Austria", "Kansas City, USA"),
+  fixture("Group J", "2026-06-28", "03:00", "Jordan", "Argentina", "Arlington, USA"),
+
+  // Knockout stage
+  knockout("Round of 32", "Match 73", "2026-06-28", "20:00", "Group A runners-up", "Group B runners-up", "Los Angeles, USA"),
+  knockout("Round of 32", "Match 76", "2026-06-29", "18:00", "Group C winners", "Group F runners-up", "Houston, USA"),
+  knockout("Round of 32", "Match 74", "2026-06-29", "21:30", "Group E winners", "A/B/C/D/F third place", "Foxborough, USA"),
+  knockout("Round of 32", "Match 75", "2026-06-30", "02:00", "Group F winners", "Group C runners-up", "Guadalupe, Mexico"),
+  knockout("Round of 32", "Match 78", "2026-06-30", "18:00", "Group E runners-up", "Group I runners-up", "Arlington, USA"),
+  knockout("Round of 32", "Match 77", "2026-06-30", "22:00", "Group I winners", "C/D/F/G/H third place", "New Jersey, USA"),
+  knockout("Round of 32", "Match 79", "2026-07-01", "02:00", "Group A winners", "C/E/F/H/I third place", "Mexico City, Mexico"),
+  knockout("Round of 32", "Match 80", "2026-07-01", "17:00", "Group L winners", "E/H/I/J/K third place", "Atlanta, USA"),
+  knockout("Round of 32", "Match 82", "2026-07-01", "21:00", "Group G winners", "A/E/H/I/J third place", "Seattle, USA"),
+  knockout("Round of 32", "Match 81", "2026-07-02", "01:00", "Group D winners", "B/E/F/I/J third place", "Santa Clara, USA"),
+  knockout("Round of 32", "Match 84", "2026-07-02", "20:00", "Group H winners", "Group J runners-up", "Los Angeles, USA"),
+  knockout("Round of 32", "Match 83", "2026-07-03", "00:00", "Group K runners-up", "Group L runners-up", "Toronto, Canada"),
+  knockout("Round of 32", "Match 85", "2026-07-03", "04:00", "Group B winners", "E/F/G/I/J third place", "Vancouver, Canada"),
+  knockout("Round of 32", "Match 88", "2026-07-03", "19:00", "Group D runners-up", "Group G runners-up", "Arlington, USA"),
+  knockout("Round of 32", "Match 86", "2026-07-03", "23:00", "Group J winners", "Group H runners-up", "Miami, USA"),
+  knockout("Round of 32", "Match 87", "2026-07-04", "02:30", "Group K winners", "D/E/I/J/L third place", "Kansas City, USA"),
+
+  knockout("Round of 16", "Match 90", "2026-07-04", "18:00", "Match 73 winners", "Match 75 winners", "Houston, USA"),
+  knockout("Round of 16", "Match 89", "2026-07-04", "22:00", "Match 74 winners", "Match 77 winners", "Philadelphia, USA"),
+  knockout("Round of 16", "Match 91", "2026-07-05", "21:00", "Match 76 winners", "Match 78 winners", "New Jersey, USA"),
+  knockout("Round of 16", "Match 92", "2026-07-06", "01:00", "Match 79 winners", "Match 80 winners", "Mexico City, Mexico"),
+  knockout("Round of 16", "Match 93", "2026-07-06", "20:00", "Match 83 winners", "Match 84 winners", "Arlington, USA"),
+  knockout("Round of 16", "Match 94", "2026-07-07", "01:00", "Match 81 winners", "Match 82 winners", "Seattle, USA"),
+  knockout("Round of 16", "Match 95", "2026-07-07", "17:00", "Match 86 winners", "Match 88 winners", "Atlanta, USA"),
+  knockout("Round of 16", "Match 96", "2026-07-07", "21:00", "Match 85 winners", "Match 87 winners", "Vancouver, Canada"),
+
+  knockout("Quarter-final", "Match 97", "2026-07-09", "21:00", "Match 89 winners", "Match 90 winners", "Foxborough, USA"),
+  knockout("Quarter-final", "Match 98", "2026-07-10", "20:00", "Match 93 winners", "Match 94 winners", "Los Angeles, USA"),
+  knockout("Quarter-final", "Match 99", "2026-07-11", "22:00", "Match 91 winners", "Match 92 winners", "Miami, USA"),
+  knockout("Quarter-final", "Match 100", "2026-07-12", "02:00", "Match 95 winners", "Match 96 winners", "Kansas City, USA"),
+
+  knockout("Semi-final", "Match 101", "2026-07-14", "20:00", "Match 97 winners", "Match 98 winners", "Arlington, USA"),
+  knockout("Semi-final", "Match 102", "2026-07-15", "20:00", "Match 99 winners", "Match 100 winners", "Atlanta, USA"),
+
+  knockout("Bronze final", "Match 103", "2026-07-18", "22:00", "Match 101 losers", "Match 102 losers", "Miami, USA"),
+  knockout("Final", "Match 104", "2026-07-19", "20:00", "Match 101 winners", "Match 102 winners", "New Jersey, USA")
+];
 
 const els = {
   navToggle: document.querySelector(".nav-toggle"),
   navMenu: document.querySelector("#nav-menu"),
-  apiBanner: document.querySelector("#api-banner"),
-  fixturesStatus: document.querySelector("#fixtures-status"),
-  fixturesGrid: document.querySelector("#fixtures-grid"),
-  squadStatus: document.querySelector("#squad-status"),
-  squadGrid: document.querySelector("#squad-grid"),
-  standingsStatus: document.querySelector("#standings-status"),
-  standingsTable: document.querySelector("#standings-table"),
-  lastUpdated: document.querySelector("#last-updated"),
-  year: document.querySelector("#year")
+  fixtureList: document.querySelector("#fixture-list"),
+  groupsGrid: document.querySelector("#groups-grid"),
+  knockoutGrid: document.querySelector("#knockout-grid"),
+  filterButtons: document.querySelectorAll(".filter-button"),
+  year: document.querySelector("#year"),
+  heroLastUpdated: document.querySelector("#hero-last-updated"),
+  footerLastUpdated: document.querySelector("#footer-last-updated")
 };
 
 document.addEventListener("DOMContentLoaded", init);
 
 function init() {
   setupNavigation();
+  setupFilters();
+  setLastUpdated();
 
   els.year.textContent = String(new Date().getFullYear());
 
-  renderFixturesLoading();
-  renderSquadLoading();
-  renderStandingsLoading();
-
-  loadAllData();
+  renderFixtures("all");
+  renderGroups();
+  renderKnockout();
 }
 
 function setupNavigation() {
@@ -144,581 +244,246 @@ function setupNavigation() {
   });
 }
 
-async function loadAllData() {
-  if (!CONFIG.ENABLE_LIVE_API) {
-    renderFallbackData("Live API disabled in CONFIG.");
-    return;
-  }
-
-  const results = await Promise.allSettled([
-    loadFixtures(),
-    loadSquad(),
-    loadStandings()
-  ]);
-
-  const liveCount = results.filter(
-    (result) => result.status === "fulfilled" && result.value === "live"
-  ).length;
-
-  const now = new Date();
-  els.lastUpdated.textContent = new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(now);
-  els.lastUpdated.dateTime = now.toISOString();
-
-  if (liveCount > 0) {
-    setApiBanner(`Live data loaded for ${liveCount} section${liveCount === 1 ? "" : "s"}; fallbacks cover the rest.`);
-  } else {
-    setApiBanner("Using fallback data. Add or update TheSportsDB settings in script.js for live coverage.");
-  }
-}
-
-function renderFallbackData(reason) {
-  renderFixtures(FALLBACK.fixtures, {
-    source: "fallback",
-    message: `Fallback fixtures shown. ${reason}`
-  });
-  renderSquad(FALLBACK.squad, {
-    source: "fallback",
-    message: `Fallback squad shown. ${reason}`
-  });
-  renderStandings(FALLBACK.standings, {
-    source: "fallback",
-    message: `Fallback group table shown. ${reason}`
-  });
-  setApiBanner(`Fallback mode: ${reason}`);
-}
-
-/* ----------------------------- API client ----------------------------- */
-
-async function apiRequest(endpoint, params = {}) {
-  const url = buildApiUrl(endpoint, params);
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json"
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`TheSportsDB request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (!data || typeof data !== "object") {
-      throw new Error("TheSportsDB returned an unexpected response.");
-    }
-
-    return data;
-  } finally {
-    window.clearTimeout(timeout);
-  }
-}
-
-function buildApiUrl(endpoint, params) {
-  const url = new URL(`${CONFIG.API_BASE_URL}/${CONFIG.API_KEY}/${endpoint}`);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, String(value));
-    }
-  });
-  return url.toString();
-}
-
-async function getScotlandTeam() {
-  if (CONFIG.SCOTLAND_TEAM_ID) {
-    const lookup = await apiRequest("lookupteam.php", { id: CONFIG.SCOTLAND_TEAM_ID });
-    const team = firstArrayItem(lookup.teams);
-    if (team) return team;
-  }
-
-  const search = await apiRequest("searchteams.php", { t: "Scotland" });
-  const teams = Array.isArray(search.teams) ? search.teams : [];
-
-  return teams.find((team) => {
-    const name = normalise(team.strTeam);
-    const sport = normalise(team.strSport);
-    return name.includes("scotland") && sport.includes("soccer");
-  }) || teams.find((team) => normalise(team.strTeam).includes("scotland"));
-}
-
-async function getScotlandEvents(teamId) {
-  const [nextResult, lastResult, searchResults] = await Promise.allSettled([
-    apiRequest("eventsnext.php", { id: teamId }),
-    apiRequest("eventslast.php", { id: teamId }),
-    searchFallbackFixtureEvents()
-  ]);
-
-  const events = [];
-
-  if (nextResult.status === "fulfilled") {
-    events.push(...toArray(nextResult.value.events));
-  }
-
-  if (lastResult.status === "fulfilled") {
-    events.push(...toArray(lastResult.value.results));
-  }
-
-  if (searchResults.status === "fulfilled") {
-    events.push(...searchResults.value);
-  }
-
-  return uniqueBy(events, "idEvent")
-    .filter(isScotlandEvent)
-    .sort(sortEventsByDate);
-}
-
-async function searchFallbackFixtureEvents() {
-  const searches = FALLBACK.fixtures.map((fixture) => {
-    const eventName = `${fixture.homeTeam}_vs_${fixture.awayTeam}`.replaceAll(" ", "_");
-    return apiRequest("searchevents.php", {
-      e: eventName,
-      s: CONFIG.WORLD_CUP_SEASON
+function setupFilters() {
+  els.filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      els.filterButtons.forEach((item) => item.classList.remove("is-active"));
+      button.classList.add("is-active");
+      renderFixtures(button.dataset.filter || "all");
     });
   });
+}
 
-  const results = await Promise.allSettled(searches);
-  return results.flatMap((result) => {
-    if (result.status !== "fulfilled") return [];
-    return toArray(result.value.event || result.value.events);
+function setLastUpdated() {
+  const formatted = formatLongDateTime(SITE_LAST_UPDATED);
+
+  [els.heroLastUpdated, els.footerLastUpdated].forEach((el) => {
+    if (!el) return;
+    el.textContent = formatted;
+    el.dateTime = SITE_LAST_UPDATED;
   });
 }
 
-/* ----------------------------- Loaders ----------------------------- */
+function renderFixtures(filter) {
+  const filtered = FIXTURES.filter((match) => {
+    if (filter === "scotland") return involvesScotland(match);
+    if (filter === "group") return match.phase === "group";
+    if (filter === "knockout") return match.phase === "knockout";
+    return true;
+  });
 
-async function loadFixtures() {
-  try {
-    const team = await getScotlandTeam();
-
-    if (!team?.idTeam) {
-      throw new Error("Scotland team record was not found.");
-    }
-
-    const events = await getScotlandEvents(team.idTeam);
-    const mapped = events.map(mapApiEvent).filter(Boolean);
-
-    if (!mapped.length) {
-      throw new Error("No Scotland event records were returned.");
-    }
-
-    renderFixtures(mapped.slice(0, 8), {
-      source: "live",
-      message: "Live fixtures/results loaded from TheSportsDB."
-    });
-
-    return "live";
-  } catch (error) {
-    console.warn(error);
-    renderFixtures(FALLBACK.fixtures, {
-      source: "fallback",
-      message: "Fallback fixtures shown because live fixture data is unavailable."
-    });
-    return "fallback";
-  }
+  els.fixtureList.innerHTML = filtered
+    .sort((a, b) => sortByDateTime(a, b))
+    .map(renderFixtureCard)
+    .join("");
 }
 
-async function loadSquad() {
-  try {
-    const team = await getScotlandTeam();
+function renderFixtureCard(match) {
+  const isScotland = involvesScotland(match);
 
-    if (!team?.idTeam) {
-      throw new Error("Scotland team record was not found.");
-    }
+  return `
+    <article class="fixture-card ${isScotland ? "is-scotland" : ""}">
+      <div class="fixture-date">
+        ${formatShortDate(match.date)}
+        <strong>${match.time} BST</strong>
+      </div>
 
-    const data = await apiRequest("lookup_all_players.php", { id: team.idTeam });
-    const players = toArray(data.player || data.players)
-      .map(mapApiPlayer)
-      .filter(Boolean)
-      .slice(0, 26);
-
-    if (!players.length) {
-      throw new Error("No Scotland player records were returned.");
-    }
-
-    renderSquad(players, {
-      source: "live",
-      message: "Live squad/player data loaded from TheSportsDB."
-    });
-
-    return "live";
-  } catch (error) {
-    console.warn(error);
-    renderSquad(FALLBACK.squad, {
-      source: "fallback",
-      message: "Fallback squad shown because live player data is unavailable."
-    });
-    return "fallback";
-  }
-}
-
-async function loadStandings() {
-  try {
-    if (!CONFIG.WORLD_CUP_LEAGUE_ID) {
-      throw new Error("WORLD_CUP_LEAGUE_ID is not configured.");
-    }
-
-    const data = await apiRequest("lookuptable.php", {
-      l: CONFIG.WORLD_CUP_LEAGUE_ID,
-      s: CONFIG.WORLD_CUP_SEASON
-    });
-
-    const rows = toArray(data.table)
-      .map(mapApiTableRow)
-      .filter(Boolean);
-
-    const groupRows = extractScotlandGroup(rows);
-
-    if (!groupRows.length) {
-      throw new Error("No Scotland group rows were returned.");
-    }
-
-    renderStandings(groupRows, {
-      source: "live",
-      message: "Live table data loaded from TheSportsDB."
-    });
-
-    return "live";
-  } catch (error) {
-    console.warn(error);
-    renderStandings(FALLBACK.standings, {
-      source: "fallback",
-      message: "Fallback Group C table shown because live standings are unavailable."
-    });
-    return "fallback";
-  }
-}
-
-/* ----------------------------- Renderers ----------------------------- */
-
-function renderFixturesLoading() {
-  els.fixturesStatus.textContent = "Loading fixtures…";
-  els.fixturesGrid.innerHTML = skeletonCards(3, "fixture-card");
-}
-
-function renderSquadLoading() {
-  els.squadStatus.textContent = "Loading squad…";
-  els.squadGrid.innerHTML = skeletonCards(8, "player-card");
-}
-
-function renderStandingsLoading() {
-  els.standingsStatus.textContent = "Loading standings…";
-  els.standingsTable.innerHTML = "";
-}
-
-function renderFixtures(fixtures, { source, message }) {
-  els.fixturesStatus.textContent = message;
-  els.fixturesGrid.innerHTML = fixtures.map((fixture) => {
-    const date = formatDate(fixture.date);
-    const time = formatTime(fixture.date);
-    const homeScore = scoreText(fixture.homeScore);
-    const awayScore = scoreText(fixture.awayScore);
-
-    return `
-      <article class="fixture-card">
-        <div class="fixture-card-inner">
-          <div class="fixture-meta">
-            <span class="badge">${escapeHtml(fixture.stage || "Fixture")}</span>
-            <span class="badge badge-muted">${source === "live" ? "Live API" : "Fallback"}</span>
-          </div>
-
-          <div class="fixture-match" aria-label="${escapeHtml(fixture.homeTeam)} versus ${escapeHtml(fixture.awayTeam)}">
-            <div class="fixture-team">
-              <span>${escapeHtml(fixture.homeTeam)}</span>
-              <span class="fixture-score">${homeScore}</span>
-            </div>
-            <div class="fixture-team">
-              <span>${escapeHtml(fixture.awayTeam)}</span>
-              <span class="fixture-score">${awayScore}</span>
-            </div>
-          </div>
-
-          <div class="fixture-detail">
-            <strong>${escapeHtml(fixture.status || "Scheduled")}</strong><br />
-            ${date}${time ? ` • ${time}` : ""}<br />
-            ${escapeHtml(fixture.venue || "Venue TBC")}
-          </div>
-        </div>
-      </article>
-    `;
-  }).join("");
-}
-
-function renderSquad(players, { source, message }) {
-  els.squadStatus.textContent = message;
-
-  els.squadGrid.innerHTML = players.map((player) => {
-    const initials = getInitials(player.name);
-
-    return `
-      <article class="player-card">
-        <div class="player-image">
+      <div class="fixture-main">
+        <span class="fixture-stage">${escapeHtml(match.stage)}</span>
+        <div class="fixture-teams">
+          <span>${escapeHtml(match.home)}</span>
           ${
-            player.image
-              ? `<img src="${escapeAttribute(player.image)}" alt="${escapeAttribute(player.name)}" loading="lazy" />`
-              : `<div class="player-placeholder" aria-hidden="true">${escapeHtml(initials)}</div>`
+            match.score
+              ? `<span class="fixture-score">${escapeHtml(match.score)}</span>`
+              : `<span aria-hidden="true">v</span>`
           }
+          <span>${escapeHtml(match.away)}</span>
         </div>
-        <div class="player-body">
-          <h3>${escapeHtml(player.name)}</h3>
-          <p>${escapeHtml(player.club || "Club TBC")}</p>
-          <div class="player-meta">
-            <span>${escapeHtml(player.position || "Player")}</span>
-            <span>${source === "live" ? "Live" : "Fallback"}</span>
-          </div>
+        <div class="fixture-meta">
+          ${escapeHtml(match.venue)}${match.code ? ` • ${escapeHtml(match.code)}` : ""}
         </div>
-      </article>
-    `;
-  }).join("");
-}
+      </div>
 
-function renderStandings(rows, { source, message }) {
-  els.standingsStatus.textContent = message;
-
-  const sorted = [...rows].sort((a, b) => {
-    if (b.pts !== a.pts) return b.pts - a.pts;
-    if (b.gd !== a.gd) return b.gd - a.gd;
-    return b.gf - a.gf;
-  });
-
-  els.standingsTable.innerHTML = `
-    <table>
-      <caption>${source === "live" ? "Live table data" : "Fallback placeholder table"} for Scotland’s group.</caption>
-      <thead>
-        <tr>
-          <th scope="col">Team</th>
-          <th scope="col">P</th>
-          <th scope="col">W</th>
-          <th scope="col">D</th>
-          <th scope="col">L</th>
-          <th scope="col">GF</th>
-          <th scope="col">GA</th>
-          <th scope="col">GD</th>
-          <th scope="col">Pts</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sorted.map((row) => `
-          <tr>
-            <td>
-              <span class="team-cell">
-                <span class="team-dot" aria-hidden="true"></span>
-                ${escapeHtml(row.team)}
-              </span>
-            </td>
-            <td>${number(row.played)}</td>
-            <td>${number(row.won)}</td>
-            <td>${number(row.drawn)}</td>
-            <td>${number(row.lost)}</td>
-            <td>${number(row.gf)}</td>
-            <td>${number(row.ga)}</td>
-            <td>${signedNumber(row.gd)}</td>
-            <td><strong>${number(row.pts)}</strong></td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
+      <span class="fixture-status">${match.score ? "Result" : match.phase}</span>
+    </article>
   `;
 }
 
-/* ----------------------------- Mappers ----------------------------- */
+function renderGroups() {
+  els.groupsGrid.innerHTML = GROUPS.map((group) => {
+    const rows = [...group.teams].sort((a, b) => {
+      if (b.pts !== a.pts) return b.pts - a.pts;
+      const gdDiff = goalDifference(b) - goalDifference(a);
+      if (gdDiff !== 0) return gdDiff;
+      return b.gf - a.gf;
+    });
 
-function mapApiEvent(event) {
-  if (!event) return null;
+    return `
+      <article class="group-card">
+        <div class="group-header">
+          <span class="group-label">${escapeHtml(group.name)}</span>
+          <span class="group-label">P W D L GD Pts</span>
+        </div>
 
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Team</th>
+              <th scope="col">P</th>
+              <th scope="col">W</th>
+              <th scope="col">D</th>
+              <th scope="col">L</th>
+              <th scope="col">GD</th>
+              <th scope="col">Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(renderGroupRow).join("")}
+          </tbody>
+        </table>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderGroupRow(row) {
+  const played = row.w + row.d + row.l;
+  const isScotland = row.team === "Scotland";
+
+  return `
+    <tr class="${isScotland ? "is-scotland" : ""}">
+      <td>
+        <span class="team-name">
+          <span class="team-dot" aria-hidden="true"></span>
+          ${escapeHtml(row.team)}
+        </span>
+      </td>
+      <td>${played}</td>
+      <td>${row.w}</td>
+      <td>${row.d}</td>
+      <td>${row.l}</td>
+      <td>${formatGoalDifference(goalDifference(row))}</td>
+      <td><strong>${row.pts}</strong></td>
+    </tr>
+  `;
+}
+
+function renderKnockout() {
+  const knockoutMatches = FIXTURES.filter((match) => match.phase === "knockout");
+
+  els.knockoutGrid.innerHTML = knockoutMatches
+    .sort((a, b) => sortByDateTime(a, b))
+    .map((match) => `
+      <article class="knockout-card">
+        <span class="knockout-round">${escapeHtml(match.stage)} • ${escapeHtml(match.code)}</span>
+        <h3>${escapeHtml(match.home)} v ${escapeHtml(match.away)}</h3>
+        <p><strong>${formatShortDate(match.date)} • ${match.time} BST</strong></p>
+        <p>${escapeHtml(match.venue)}</p>
+      </article>
+    `)
+    .join("");
+}
+
+function fixture(stage, date, time, home, away, venue) {
   return {
-    opponent: getOpponent(event),
-    homeTeam: event.strHomeTeam || "Home team TBC",
-    awayTeam: event.strAwayTeam || "Away team TBC",
-    date: event.strTimestamp || combineDateTime(event.dateEvent, event.strTime),
-    venue: event.strVenue || event.strCity || "Venue TBC",
-    stage: event.strRound || event.strGroup || event.strLeague || "Fixture",
-    status: event.strStatus || inferEventStatus(event),
-    homeScore: event.intHomeScore,
-    awayScore: event.intAwayScore
+    phase: "group",
+    stage,
+    date,
+    time,
+    home,
+    away,
+    venue,
+    score: ""
   };
 }
 
-function mapApiPlayer(player) {
-  if (!player?.strPlayer) return null;
-
+function result(stage, date, time, home, away, venue, score) {
   return {
-    name: player.strPlayer,
-    position: player.strPosition || player.strRole || "Player",
-    club: player.strTeam || player.strTeam2 || "Club TBC",
-    image: player.strCutout || player.strThumb || player.strRender || ""
+    phase: "group",
+    stage,
+    date,
+    time,
+    home,
+    away,
+    venue,
+    score
   };
 }
 
-function mapApiTableRow(row) {
-  const team = row.strTeam || row.name || row.team;
-  if (!team) return null;
+function knockout(stage, code, date, time, home, away, venue) {
+  return {
+    phase: "knockout",
+    stage,
+    code,
+    date,
+    time,
+    home,
+    away,
+    venue,
+    score: ""
+  };
+}
 
-  const gf = parseNumber(row.intGoalsFor ?? row.goalsfor ?? row.gf);
-  const ga = parseNumber(row.intGoalsAgainst ?? row.goalsagainst ?? row.ga);
-
+function blankTeam(team) {
   return {
     team,
-    played: parseNumber(row.intPlayed ?? row.played),
-    won: parseNumber(row.intWin ?? row.intWon ?? row.win),
-    drawn: parseNumber(row.intDraw ?? row.draw),
-    lost: parseNumber(row.intLoss ?? row.intLost ?? row.loss),
-    gf,
-    ga,
-    gd: parseNumber(row.intGoalDifference ?? row.goalsdifference ?? row.gd ?? gf - ga),
-    pts: parseNumber(row.intPoints ?? row.total)
+    w: 0,
+    d: 0,
+    l: 0,
+    gf: 0,
+    ga: 0,
+    pts: 0
   };
 }
 
-/* ----------------------------- Helpers ----------------------------- */
-
-function setApiBanner(message) {
-  els.apiBanner.innerHTML = `
-    <span class="pulse" aria-hidden="true"></span>
-    <span>${escapeHtml(message)}</span>
-  `;
+function involvesScotland(match) {
+  return match.home === "Scotland" || match.away === "Scotland";
 }
 
-function isScotlandEvent(event) {
-  const text = normalise([
-    event.strEvent,
-    event.strHomeTeam,
-    event.strAwayTeam,
-    event.strLeague,
-    event.strGroup
-  ].filter(Boolean).join(" "));
-
-  return text.includes("scotland");
+function goalDifference(row) {
+  return row.gf - row.ga;
 }
 
-function getOpponent(event) {
-  const home = event.strHomeTeam || "";
-  const away = event.strAwayTeam || "";
-  if (normalise(home).includes("scotland")) return away;
-  if (normalise(away).includes("scotland")) return home;
-  return event.strEvent || "Opponent TBC";
+function formatGoalDifference(value) {
+  return value > 0 ? `+${value}` : String(value);
 }
 
-function inferEventStatus(event) {
-  const hasScore = event.intHomeScore !== null &&
-    event.intHomeScore !== undefined &&
-    event.intAwayScore !== null &&
-    event.intAwayScore !== undefined;
-
-  return hasScore ? "Result" : "Scheduled";
+function sortByDateTime(a, b) {
+  return toSortableDate(a.date, a.time) - toSortableDate(b.date, b.time);
 }
 
-function extractScotlandGroup(rows) {
-  const groupWithScotland = rows.find((row) => normalise(row.team).includes("scotland"));
-  if (!groupWithScotland) return [];
-
-  /**
-   * If TheSportsDB provides a full tournament table without group labels,
-   * fall back to known Group C team filtering.
-   */
-  const groupTeams = ["brazil", "morocco", "haiti", "scotland"];
-  const filtered = rows.filter((row) => groupTeams.includes(normalise(row.team)));
-  return filtered.length >= 4 ? filtered : rows.slice(0, 4);
+/**
+ * All source fixture times are stored as BST local time.
+ * This creates a sortable timestamp by treating BST as UTC+1.
+ */
+function toSortableDate(date, time) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  return Date.UTC(year, month - 1, day, hour - 1, minute);
 }
 
-function sortEventsByDate(a, b) {
-  const aTime = new Date(a.strTimestamp || a.dateEvent || 0).getTime();
-  const bTime = new Date(b.strTimestamp || b.dateEvent || 0).getTime();
-  return aTime - bTime;
-}
-
-function combineDateTime(date, time) {
-  if (!date) return "";
-  if (!time) return date;
-  return `${date}T${time}`;
-}
-
-function formatDate(value) {
-  if (!value) return "Date TBC";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+function formatShortDate(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 
   return new Intl.DateTimeFormat("en-GB", {
     weekday: "short",
     day: "2-digit",
-    month: "short",
-    year: "numeric"
+    month: "short"
   }).format(date);
 }
 
-function formatTime(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
+function formatLongDateTime(isoString) {
   return new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(date);
-}
-
-function scoreText(value) {
-  if (value === null || value === undefined || value === "") return "–";
-  return escapeHtml(String(value));
-}
-
-function skeletonCards(count, className) {
-  return Array.from({ length: count }, () => `
-    <article class="${className}" aria-hidden="true">
-      <div style="min-height: 220px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(141,216,255,.2), rgba(255,255,255,.12));"></div>
-    </article>
-  `).join("");
-}
-
-function getInitials(name) {
-  return String(name)
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("");
-}
-
-function firstArrayItem(value) {
-  return Array.isArray(value) && value.length ? value[0] : null;
-}
-
-function toArray(value) {
-  return Array.isArray(value) ? value : [];
-}
-
-function uniqueBy(items, key) {
-  const seen = new Set();
-
-  return items.filter((item) => {
-    const id = item?.[key] || JSON.stringify(item);
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-}
-
-function normalise(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-function parseNumber(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function number(value) {
-  return String(parseNumber(value));
-}
-
-function signedNumber(value) {
-  const parsed = parseNumber(value);
-  return parsed > 0 ? `+${parsed}` : String(parsed);
+    timeZone: "Europe/London",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+    timeZoneName: "short"
+  }).format(new Date(isoString));
 }
 
 function escapeHtml(value) {
@@ -728,8 +493,4 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function escapeAttribute(value) {
-  return escapeHtml(value).replaceAll("`", "&#096;");
 }
