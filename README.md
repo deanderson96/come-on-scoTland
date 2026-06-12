@@ -14,7 +14,9 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Knockout fixture filter
 - Group tables when available from the data source
 - Knockout path when available from the data source
-- BST kick-off times
+- Europe/London kick-off rendering for BST tournament dates
+- Automatic 5-minute refresh checks while the page is visible
+- Browser cache fallback if fresh API requests fail
 - Mobile responsive layout
 - Accessible semantic HTML
 - No backend
@@ -27,6 +29,8 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 .
 ├── index.html
 ├── styles.css
+├── background.css
+├── standings.css
 ├── script.js
 └── README.md
 ```
@@ -40,12 +44,12 @@ The JavaScript fetches and merges tournament data from multiple TheSportsDB endp
 - `eventsseason.php` for World Cup 2026 season events
 - `eventspastleague.php` for recently completed World Cup events
 - `eventsnextleague.php` for upcoming World Cup events
-- `eventsround.php` for rounds 1–12 of the 2026 World Cup season
+- `eventsround.php` for rounds 1–20 of the 2026 World Cup season
 - `lookuptable.php` for standings when available
 
 The responses are de-duplicated in the browser using TheSportsDB event IDs first, then fixture date/time/team details.
 
-The configuration is in `script.js`:
+The main configuration is in `script.js`:
 
 ```js
 const CONFIG = {
@@ -53,12 +57,13 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v4",
+  cacheKey: "scotland-2026-world-cup-cache-v7",
   cacheMinutes: 5,
   refreshMinutes: 5,
+  timeoutMs: 10000,
   timeZone: "Europe/London",
-  displayOffsetMinutes: 60,
-  roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
+  roundsToProbe: Array.from({ length: 20 }, (_, index) => index + 1),
+  groupNames: Array.from({ length: 12 }, (_, index) => `Group ${String.fromCharCode(65 + index)}`)
 };
 ```
 
@@ -74,12 +79,12 @@ Fresh API requests are made only when:
 - there is no cached tournament data in the visitor’s browser, or
 - the cached data is 5 minutes old or older.
 
-A fresh refresh can make up to 16 API requests:
+A fresh refresh can make up to 24 API requests:
 
 1. `eventsseason.php`
 2. `eventspastleague.php`
 3. `eventsnextleague.php`
-4. `eventsround.php` for rounds 1–12
+4. `eventsround.php` for rounds 1–20
 5. `lookuptable.php`
 
 If a fresh request fails, the site uses the most recent successful cached response from the visitor’s browser.
@@ -100,15 +105,9 @@ Because this is a static GitHub Pages site, anything in `script.js` is visible i
 
 All displayed fixture times are rendered in **Europe/London** time.
 
-The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window this displays as **BST**.
+The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window, Europe/London displays as **BST**.
 
-A one-hour display offset is also applied here:
-
-```js
-displayOffsetMinutes: 60
-```
-
-This keeps the published UK kick-off display aligned with the expected BST schedule.
+No manual display offset is currently applied.
 
 ## Last updated
 
@@ -165,9 +164,11 @@ Edit the CSS variables at the top of `styles.css`.
 }
 ```
 
-### Hero text
+### Hero text and player-name scramble
 
 Edit the hero section in `index.html`.
+
+The decorative player-name layer is the `.player-name-scramble` block inside the hero. It is visual-only and marked `aria-hidden="true"`.
 
 ### API refresh interval
 
@@ -182,23 +183,22 @@ refreshMinutes: 5
 
 ### Round probing
 
-The app currently probes rounds 1–12:
+The app currently probes rounds 1–20:
 
 ```js
-roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
+roundsToProbe: Array.from({ length: 20 }, (_, index) => index + 1)
 ```
 
 Increase this only if TheSportsDB starts publishing tournament events under additional numeric round values.
 
 ### Layout
 
-Most layout controls are in `styles.css`:
+Core layout controls are split across:
 
-```css
-.stat-grid
-.fixture-list
-.groups-grid
-.knockout-grid
+```text
+styles.css       Main layout, hero, cards, fixtures, footer
+background.css   Decorative hero name scramble
+standings.css    Compact standings tables and Saltire header mark
 ```
 
 ## Credits
