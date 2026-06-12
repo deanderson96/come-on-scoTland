@@ -3,10 +3,14 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v2",
+  cacheKey: "scotland-2026-world-cup-cache-v3",
   cacheMinutes: 15,
   timeoutMs: 10000,
   timeZone: "Europe/London",
+
+  // TheSportsDB World Cup kick-off records are currently displaying one hour behind
+  // the published UK schedule, so all visible fixture times are shifted forward here.
+  displayOffsetMinutes: 60,
   roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
 };
 
@@ -22,7 +26,11 @@ const els = {
   footerLastUpdated: document.querySelector("#footer-last-updated")
 };
 
-let state = { fixtures: [], groups: [], knockout: [] };
+let state = {
+  fixtures: [],
+  groups: [],
+  knockout: []
+};
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -64,7 +72,6 @@ function setupFilters() {
 
       button.classList.add("is-active");
       button.setAttribute("aria-pressed", "true");
-
       renderFixtures(button.dataset.filter || "all");
     });
   });
@@ -521,7 +528,7 @@ function renderHero(fixtures) {
 
   const now = Date.now();
   const next = fixtures.find((match) => {
-    return isScotland(match) && match.kickoff && match.kickoff.getTime() >= now;
+    return isScotland(match) && match.kickoff && displayDate(match.kickoff).getTime() >= now;
   });
 
   const latest = [...fixtures].reverse().find((match) => isScotland(match));
@@ -609,19 +616,26 @@ function hasTimeZoneSuffix(value) {
   return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(clean(value));
 }
 
+function displayDate(date) {
+  if (!date) return null;
+  return new Date(date.getTime() + CONFIG.displayOffsetMinutes * 60 * 1000);
+}
+
 function shortDate(date) {
-  if (!date) return "Date TBC";
+  const shownDate = displayDate(date);
+  if (!shownDate) return "Date TBC";
 
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: CONFIG.timeZone,
     weekday: "short",
     day: "2-digit",
     month: "short"
-  }).format(date);
+  }).format(shownDate);
 }
 
 function kickoffTime(date) {
-  if (!date) return "Time TBC";
+  const shownDate = displayDate(date);
+  if (!shownDate) return "Time TBC";
 
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: CONFIG.timeZone,
@@ -630,7 +644,7 @@ function kickoffTime(date) {
     hour12: true,
     timeZoneName: "short"
   })
-    .format(date)
+    .format(shownDate)
     .replace(" am", "am")
     .replace(" pm", "pm");
 }
@@ -701,8 +715,8 @@ function isScotland(match) {
 }
 
 function sortMatches(a, b) {
-  return (a.kickoff ? a.kickoff.getTime() : Number.MAX_SAFE_INTEGER) -
-    (b.kickoff ? b.kickoff.getTime() : Number.MAX_SAFE_INTEGER);
+  return (a.kickoff ? displayDate(a.kickoff).getTime() : Number.MAX_SAFE_INTEGER) -
+    (b.kickoff ? displayDate(b.kickoff).getTime() : Number.MAX_SAFE_INTEGER);
 }
 
 function sortStandings(a, b) {
