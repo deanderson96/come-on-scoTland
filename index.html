@@ -3,267 +3,266 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Scotland World Cup 2026 Fan Hub</title>
+  <title>Scotland 2026 — World Cup Fan Hub</title>
   <meta
     name="description"
-    content="A modern-retro Scotland FIFA World Cup 2026 fan site with fixtures, squad, standings, updates and TheSportsDB-powered data."
+    content="A modern-retro Scotland FIFA World Cup 2026 fan site with fixtures, squad cards, group standings, news and tournament context."
   />
-  <meta name="theme-color" content="#071a44" />
+  <meta name="theme-color" content="#071a3d" />
+
+  <meta property="og:title" content="Scotland 2026 — World Cup Fan Hub" />
+  <meta property="og:description" content="Fixtures, squad, group table and Scotland-focused World Cup updates." />
+  <meta property="og:type" content="website" />
 
   <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
 </head>
 
 <body>
-  <a class="skip-link" href="#main-content">Skip to content</a>
-  <div class="page-texture" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header">
-    <nav class="nav container" aria-label="Primary navigation">
-      <a class="brand" href="#home" aria-label="Scotland World Cup 2026 home">
-        <span class="brand__mark" aria-hidden="true">SCO</span>
+  <header class="site-header" aria-label="Site header">
+    <nav class="nav shell" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Scotland 2026 home">
+        <span class="brand-mark" aria-hidden="true">✦</span>
         <span>
           <strong>Scotland 2026</strong>
-          <small>Fan Hub</small>
+          <small>Tartan tournament hub</small>
         </span>
       </a>
 
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-menu">
-        <span class="sr-only">Toggle menu</span>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">
+        <span class="sr-only">Toggle navigation</span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
       </button>
 
-      <ul class="nav-links" id="primary-menu">
+      <ul class="nav-menu" id="nav-menu">
         <li><a href="#fixtures">Fixtures</a></li>
         <li><a href="#squad">Squad</a></li>
         <li><a href="#standings">Group</a></li>
-        <li><a href="#updates">Updates</a></li>
+        <li><a href="#news">Updates</a></li>
         <li><a href="#about">About</a></li>
       </ul>
     </nav>
   </header>
 
-  <main id="main-content">
-    <section class="hero section" id="home">
-      <div class="container hero__grid">
-        <div class="hero__copy">
-          <p class="eyebrow">Modern-retro tournament microsite</p>
-          <h1>Scotland’s World Cup 2026 hub.</h1>
-          <p class="hero__intro">
-            Follow Scotland’s road through the 2026 tournament with live-ready fixtures,
-            squad notes, group standings and editorial updates wrapped in a classic
-            football programme aesthetic.
+  <main id="main">
+    <section class="hero section" id="top">
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">FIFA World Cup 2026 • Scotland fan microsite</p>
+          <h1>Scotland’s World Cup story, built for the Tartan Army.</h1>
+          <p class="hero-lede">
+            A polished, lightweight hub for tracking Scotland fixtures, squad notes,
+            group standings and matchday updates across the 2026 tournament.
           </p>
 
-          <div class="hero__actions" aria-label="Hero actions">
-            <a class="button button--primary" href="#fixtures">View Fixtures</a>
-            <a class="button button--secondary" href="#squad">Meet the Squad</a>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button button-primary" href="#fixtures">View Fixtures</a>
+            <a class="button button-secondary" href="#squad">Meet the Squad</a>
           </div>
 
-          <div class="hero__badges" aria-label="Site highlights">
-            <span>GitHub Pages ready</span>
-            <span>Live API fallback</span>
-            <span>Accessible HTML</span>
+          <div class="data-ribbon" id="api-banner" role="status" aria-live="polite">
+            <span class="pulse" aria-hidden="true"></span>
+            <span>Preparing live data with fallback coverage.</span>
           </div>
         </div>
 
-        <aside class="scoreboard" aria-labelledby="scoreboard-title">
-          <div class="scoreboard__topline">
-            <span>Next Match</span>
-            <span class="live-dot" aria-hidden="true"></span>
+        <aside class="hero-card" aria-label="Tournament snapshot">
+          <div class="scoreboard">
+            <div class="scoreboard-top">
+              <span>Group C</span>
+              <span>2026</span>
+            </div>
+
+            <div class="scoreboard-teams">
+              <span>SCO</span>
+              <strong>Road to kick-off</strong>
+              <span>WC</span>
+            </div>
+
+            <div class="scoreboard-grid" aria-label="Key facts">
+              <div>
+                <span>Host nations</span>
+                <strong>Canada • Mexico • USA</strong>
+              </div>
+              <div>
+                <span>Focus</span>
+                <strong>Fixtures • Squad • Group</strong>
+              </div>
+              <div>
+                <span>Style</span>
+                <strong>Modern-retro Scotland</strong>
+              </div>
+            </div>
           </div>
-
-          <h2 id="scoreboard-title">Scotland</h2>
-
-          <div class="scoreboard__teams">
-            <span>SCO</span>
-            <strong>v</strong>
-            <span id="hero-opponent">TBC</span>
-          </div>
-
-          <dl class="scoreboard__details">
-            <div>
-              <dt>Date</dt>
-              <dd id="hero-date">Loading…</dd>
-            </div>
-            <div>
-              <dt>Venue</dt>
-              <dd id="hero-venue">Checking data</dd>
-            </div>
-            <div>
-              <dt>Stage</dt>
-              <dd id="hero-stage">Group stage</dd>
-            </div>
-          </dl>
-
-          <p class="scoreboard__note" id="hero-source">
-            Connecting to TheSportsDB or fallback data.
-          </p>
         </aside>
       </div>
+
+      <div class="tartan-strip" aria-hidden="true"></div>
     </section>
 
-    <section class="section section--alt reveal" id="fixtures" aria-labelledby="fixtures-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">Fixtures &amp; results</p>
-          <div>
-            <h2 id="fixtures-title">Match centre</h2>
-            <p>
-              Live data is requested from TheSportsDB where available. If unavailable,
-              verified fallback fixtures keep the page usable.
-            </p>
-          </div>
+    <section class="section" id="fixtures" aria-labelledby="fixtures-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Match centre</p>
+        <h2 id="fixtures-title">Fixtures & results</h2>
+        <p>
+          Live data is attempted through TheSportsDB where possible. If an API key,
+          endpoint, rate limit or data record is unavailable, curated fallback data is shown.
+        </p>
+      </div>
+
+      <div class="shell">
+        <div class="panel-status" id="fixtures-status" role="status" aria-live="polite">
+          Loading fixtures…
+        </div>
+        <div class="fixture-grid" id="fixtures-grid" aria-label="Scotland fixtures"></div>
+      </div>
+    </section>
+
+    <section class="section section-navy" id="squad" aria-labelledby="squad-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Player cards</p>
+        <h2 id="squad-title">Scotland squad</h2>
+        <p>
+          Squad cards show name, position, club and player imagery where live data provides it.
+          Fallback cards use simple generated crests so the layout always remains complete.
+        </p>
+      </div>
+
+      <div class="shell">
+        <div class="panel-status panel-status-dark" id="squad-status" role="status" aria-live="polite">
+          Loading squad…
+        </div>
+        <div class="squad-grid" id="squad-grid" aria-label="Scotland squad cards"></div>
+      </div>
+    </section>
+
+    <section class="section" id="standings" aria-labelledby="standings-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Group watch</p>
+        <h2 id="standings-title">Group table</h2>
+        <p>
+          A compact standings table for Scotland’s group. Update the fallback rows in
+          <code>script.js</code> if official groups, scores or API records change.
+        </p>
+      </div>
+
+      <div class="shell table-wrap">
+        <div class="panel-status" id="standings-status" role="status" aria-live="polite">
+          Loading standings…
         </div>
 
-        <div class="data-toolbar">
-          <p class="data-notice" id="data-notice" role="status" aria-live="polite">
-            Preparing data feed…
+        <div class="responsive-table" id="standings-table" aria-label="Group standings"></div>
+      </div>
+    </section>
+
+    <section class="section" id="news" aria-labelledby="news-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Latest updates</p>
+        <h2 id="news-title">Tournament notebook</h2>
+        <p>
+          Editorial cards for Scotland supporters. These are intentionally static and easy to edit.
+        </p>
+      </div>
+
+      <div class="shell news-grid">
+        <article class="news-card">
+          <span class="tag">Matchday</span>
+          <h3>Boston base sets the tone</h3>
+          <p>
+            Scotland’s opening chapter is framed around preparation, travelling support and
+            a group-stage test that rewards composure as much as ambition.
           </p>
-          <button class="button button--small" id="refresh-data" type="button">
-            Refresh data
-          </button>
-        </div>
+          <a href="#fixtures" aria-label="Read fixtures for Boston base update">View fixtures</a>
+        </article>
 
-        <div class="fixture-grid" id="fixtures-grid" aria-live="polite"></div>
+        <article class="news-card">
+          <span class="tag">Squad</span>
+          <h3>Experience meets energy</h3>
+          <p>
+            The player pool blends senior tournament know-how with direct, modern attacking options —
+            the kind of balance supporters hope can travel well.
+          </p>
+          <a href="#squad" aria-label="View squad cards">Meet the squad</a>
+        </article>
+
+        <article class="news-card">
+          <span class="tag">Fan guide</span>
+          <h3>A clean hub for quick checks</h3>
+          <p>
+            Fixtures, squad notes and standings are kept lightweight so the site works well on mobile
+            before, during and after matchdays.
+          </p>
+          <a href="#about" aria-label="Read about this website">About the site</a>
+        </article>
       </div>
     </section>
 
-    <section class="section reveal" id="squad" aria-labelledby="squad-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">Scotland squad</p>
-          <div>
-            <h2 id="squad-title">Player cards</h2>
-            <p>
-              Cards use live player records when available, with an editable fallback
-              player pool for pre-tournament use.
-            </p>
-          </div>
-        </div>
-
-        <div class="squad-grid" id="squad-grid" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <section class="section section--alt reveal" id="standings" aria-labelledby="standings-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">Group table</p>
-          <div>
-            <h2 id="standings-title">Standings</h2>
-            <p>
-              Displays Scotland’s group when available. Placeholder records remain
-              transparent until official live standings are returned.
-            </p>
-          </div>
-        </div>
-
-        <div class="table-card" id="standings-table" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <section class="section reveal" id="updates" aria-labelledby="updates-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">Latest updates</p>
-          <div>
-            <h2 id="updates-title">Tournament notes</h2>
-            <p>
-              Editorial-style cards for professional site copy. Update these manually
-              as official news develops.
-            </p>
-          </div>
-        </div>
-
-        <div class="news-grid" id="news-grid"></div>
-      </div>
-    </section>
-
-    <section class="section section--about reveal" id="about" aria-labelledby="about-title">
-      <div class="container about-grid">
+    <section class="section about-section" id="about" aria-labelledby="about-title">
+      <div class="shell about-grid">
         <div>
-          <p class="eyebrow">About the hub</p>
-          <h2 id="about-title">Built for the Tartan Army, ready for GitHub.</h2>
+          <p class="eyebrow">About</p>
+          <h2 id="about-title">A Scotland-first World Cup microsite.</h2>
           <p>
-            This static website is designed as a Scotland-focused World Cup 2026
-            microsite. It combines a retro football programme look with modern responsive
-            layouts, accessible markup and lightweight JavaScript.
+            This static website is designed for GitHub Pages and built with plain HTML, CSS and JavaScript.
+            It attempts to enhance the experience with public football data from TheSportsDB while keeping
+            a complete fallback experience for reliability.
           </p>
           <p>
-            The 2026 tournament is hosted across the USA, Canada and Mexico. This site
-            avoids making unsupported selection or squad claims by labelling fallback
-            content clearly and preferring live data when the API responds.
+            The 2026 FIFA World Cup is staged across the United States, Canada and Mexico. This site keeps
+            the focus on Scotland: fixtures, player cards, group context and supporter-friendly updates.
           </p>
         </div>
 
-        <div class="about-panel">
-          <h3>Site features</h3>
-          <ul class="check-list">
-            <li>No build step or backend</li>
-            <li>TheSportsDB API client</li>
-            <li>Graceful loading, error and fallback states</li>
-            <li>Responsive cards, tables and navigation</li>
-            <li>Editable mock data for quick updates</li>
-          </ul>
+        <div class="about-list" aria-label="Technical highlights">
+          <div>
+            <strong>No backend</strong>
+            <span>Runs as a static site from GitHub Pages.</span>
+          </div>
+          <div>
+            <strong>Resilient data</strong>
+            <span>Live API attempts with graceful fallback rendering.</span>
+          </div>
+          <div>
+            <strong>Responsive</strong>
+            <span>Mobile-first cards, tables and navigation.</span>
+          </div>
+          <div>
+            <strong>Accessible</strong>
+            <span>Semantic landmarks, skip link, live regions and keyboard-friendly controls.</span>
+          </div>
         </div>
       </div>
     </section>
-
-    <noscript>
-      <section class="section">
-        <div class="container">
-          <div class="noscript-card">
-            <h2>JavaScript is disabled</h2>
-            <p>
-              This site needs JavaScript to fetch and render fixtures, squad cards and
-              standings. The static layout will still load, but live and fallback data
-              cards will not render.
-            </p>
-          </div>
-        </div>
-      </section>
-    </noscript>
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-grid">
+    <div class="shell footer-grid">
       <div>
-        <a class="brand brand--footer" href="#home">
-          <span class="brand__mark" aria-hidden="true">SCO</span>
-          <span>
-            <strong>Scotland 2026</strong>
-            <small>Fan Hub</small>
-          </span>
-        </a>
+        <strong>Scotland 2026</strong>
+        <p>A fan-made static microsite for Scotland supporters.</p>
+      </div>
+
+      <div>
         <p>
-          A lightweight static fan site. Football data powered by
-          <a href="https://www.thesportsdb.com/" rel="noopener">TheSportsDB</a>.
+          Football data powered by
+          <a href="https://www.thesportsdb.com/" rel="noopener noreferrer">TheSportsDB</a>.
+        </p>
+        <p>
+          Built for GitHub Pages. Last data refresh:
+          <time id="last-updated" datetime="">Not yet refreshed</time>.
         </p>
       </div>
 
       <div>
-        <h2 class="footer-heading">Credits</h2>
-        <p>
-          Designed for GitHub Pages using plain HTML, CSS and JavaScript.
-          Not affiliated with FIFA, UEFA, the Scottish FA or TheSportsDB.
-        </p>
-      </div>
-
-      <div>
-        <h2 class="footer-heading">Deploy</h2>
-        <p>
-          Copy these files into a GitHub repository and enable Pages from the repository
-          settings.
-        </p>
+        <p>&copy; <span id="year"></span> Scotland 2026 Fan Hub.</p>
+        <p>Not affiliated with FIFA, UEFA, the Scottish FA or TheSportsDB.</p>
       </div>
     </div>
-
-    <p class="footer-bottom">
-      &copy; <span id="current-year"></span> Scotland World Cup 2026 Fan Hub.
-    </p>
   </footer>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
