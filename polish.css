@@ -1,0 +1,163 @@
+html {
+  scroll-padding-top: 88px;
+}
+
+::selection {
+  color: var(--navy-950);
+  background: var(--sky-300);
+}
+
+.site-header {
+  box-shadow: 0 12px 34px rgba(3, 11, 29, 0.18);
+}
+
+.hero-copy,
+.hero-card {
+  animation: gentle-rise 520ms ease both;
+}
+
+.hero-card {
+  animation-delay: 90ms;
+}
+
+.button-primary:hover,
+.button-primary:focus-visible {
+  box-shadow: 0 18px 42px rgba(141, 216, 255, 0.3);
+}
+
+.stat-card,
+.fixture-card,
+.group-card,
+.knockout-card {
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.stat-card:hover,
+.fixture-card:hover,
+.knockout-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 54px rgba(7, 26, 61, 0.14);
+}
+
+.fixture-card.is-scotland {
+  background:
+    linear-gradient(90deg, rgba(141, 216, 255, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.84);
+}
+
+.fixture-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fixture-status.status-live {
+  color: #ffffff;
+  background: #b42318;
+  box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.12);
+}
+
+.fixture-status.status-live::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.72);
+  animation: live-pulse 1.4s infinite;
+}
+
+.fixture-status.status-result {
+  color: #ffffff;
+  background: var(--navy-900);
+}
+
+.fixture-status.status-postponed,
+.fixture-status.status-cancelled,
+.fixture-status.status-canceled,
+.fixture-status.status-abandoned,
+.fixture-status.status-suspended,
+.fixture-status.status-delayed {
+  color: #7a2e0e;
+  background: #ffead5;
+}
+
+.group-card {
+  isolation: isolate;
+}
+
+.group-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(141, 216, 255, 0.16), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 42%);
+}
+
+.group-empty {
+  color: rgba(255, 255, 255, 0.72);
+  text-align: left !important;
+  font-weight: 800;
+}
+
+.knockout-card {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(251, 247, 234, 0.82)),
+    rgba(255, 255, 255, 0.78);
+}
+
+.site-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes live-pulse {
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes gentle-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .last-updated-pill {
+    border-radius: 18px;
+  }
+
+  .fixture-teams {
+    gap: 0.38rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy,
+  .hero-card,
+  .fixture-status.status-live::before {
+    animation: none !important;
+  }
+
+  .stat-card:hover,
+  .fixture-card:hover,
+  .knockout-card:hover {
+    transform: none;
+  }
+}
