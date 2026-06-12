@@ -45,7 +45,7 @@
   top: var(--y);
   z-index: 1;
   max-width: 34ch;
-  color: rgba(255, 255, 255, var(--a));
+  color: rgba(255, 214, 92, var(--a));
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
   font-size: var(--s);
   font-weight: 900;
@@ -55,8 +55,8 @@
   white-space: nowrap;
   transform: translate(-8%, -50%) rotate(var(--r));
   text-shadow:
-    0 1px 0 rgba(141, 216, 255, 0.12),
-    0 14px 36px rgba(3, 11, 29, 0.28);
+    0 1px 0 rgba(255, 245, 190, 0.14),
+    0 14px 36px rgba(3, 11, 29, 0.32);
   mix-blend-mode: screen;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .player-name-scramble span:nth-child(5n) {
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
+  -webkit-text-stroke: 1px rgba(255, 214, 92, 0.12);
 }
 
 @media (max-width: 980px) {
