@@ -53,19 +53,26 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v2",
-  cacheMinutes: 15,
+  cacheKey: "scotland-2026-world-cup-cache-v4",
+  cacheMinutes: 5,
+  refreshMinutes: 5,
   timeZone: "Europe/London",
+  displayOffsetMinutes: 60,
   roundsToProbe: Array.from({ length: 12 }, (_, index) => index + 1)
 };
 ```
 
 ## Request frequency
 
-By default, the site makes fresh API requests only when:
+The site checks for fresh data automatically:
+
+- when a visitor opens the page, and
+- every 5 minutes while the page remains open and visible.
+
+Fresh API requests are made only when:
 
 - there is no cached tournament data in the visitor’s browser, or
-- the cached data is older than 15 minutes.
+- the cached data is 5 minutes old or older.
 
 A fresh refresh can make up to 16 API requests:
 
@@ -93,13 +100,15 @@ Because this is a static GitHub Pages site, anything in `script.js` is visible i
 
 All displayed fixture times are rendered in **Europe/London** time.
 
-The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window this displays as **BST**, so a fixture timestamp of `01:00 UTC` displays as:
+The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window this displays as **BST**.
 
-```text
-2:00am BST
+A one-hour display offset is also applied here:
+
+```js
+displayOffsetMinutes: 60
 ```
 
-This prevents the Haiti v Scotland issue where a 2:00am BST kick-off could appear one hour early.
+This keeps the published UK kick-off display aligned with the expected BST schedule.
 
 ## Last updated
 
@@ -162,11 +171,14 @@ Edit the hero section in `index.html`.
 
 ### API refresh interval
 
-Change this value in `script.js`:
+Change these values in `script.js`:
 
 ```js
-cacheMinutes: 15
+cacheMinutes: 5,
+refreshMinutes: 5
 ```
+
+`cacheMinutes` controls when cached data expires. `refreshMinutes` controls how often the open page checks for fresh data.
 
 ### Round probing
 
