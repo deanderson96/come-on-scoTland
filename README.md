@@ -57,7 +57,7 @@ The responses are de-duplicated in the browser using TheSportsDB event IDs first
 The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
 
 ```js
-CONFIG.cacheKey = "scotland-2026-world-cup-cache-v15";
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v16";
 ```
 
 Core API defaults remain in `script.js`:
@@ -142,9 +142,9 @@ If a match has a score but no explicit finished status, it is treated as `FT` un
 
 ## Team fixture search
 
-The fixture toolbar includes a team search field. It builds its suggestions from rendered fixture cards, then hides or shows fixture cards based on the selected or typed team name.
+The fixture toolbar includes a team search field for All fixtures, Group stage and Knockout views. It builds suggestions from rendered fixture cards, then hides or shows fixture cards based on the selected or typed team name.
 
-It works alongside the existing fixture filters, so visitors can combine a team search with All fixtures, Scotland, Group stage or Knockout.
+The search is hidden and cleared in the Scotland view, because the Scotland filter already shows Scotland fixtures only.
 
 ## Last updated
 
