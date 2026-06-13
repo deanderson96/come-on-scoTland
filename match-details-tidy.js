@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v18";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v19";
   }
 
   const originalRequest = window.request;
@@ -53,10 +53,29 @@
   }
 
   function tidyRenderedMatchDetails() {
-    document.querySelectorAll(".match-detail-block").forEach((block) => {
-      const title = block.querySelector("h4")?.textContent.trim().toLowerCase();
-      if (title === "lineups") {
-        block.remove();
+    document.querySelectorAll(".match-details-panel").forEach((panel) => {
+      panel.querySelectorAll(".match-detail-block").forEach((block) => {
+        const title = block.querySelector("h4")?.textContent.trim().toLowerCase();
+
+        if (title === "lineups") {
+          block.remove();
+          return;
+        }
+
+        if ((title === "match stats" || title === "timeline") && block.querySelector(".match-details-note")) {
+          block.remove();
+        }
+      });
+
+      const hasStats = Boolean(panel.querySelector(".match-stats-table"));
+      const hasTimeline = Boolean(panel.querySelector(".match-timeline li"));
+      const summary = panel.querySelector(".match-details-summary");
+
+      if (!hasStats && !hasTimeline && summary && !panel.querySelector(".match-details-availability-note")) {
+        summary.insertAdjacentHTML(
+          "afterend",
+          `<p class="match-details-note match-details-availability-note">Detailed match stats and timeline events have not been provided by TheSportsDB for this match yet.</p>`
+        );
       }
     });
 
@@ -199,5 +218,14 @@
 
   function clean(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 })();
