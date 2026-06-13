@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v12";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v13";
   }
 
   window.mapEvent = function mapEvent(event) {
@@ -38,16 +38,11 @@
       venue: clean([event.strVenue, event.strCity].filter(Boolean).join(", ")) || "Venue TBC",
       kickoff: kickoffDate(event),
       score: matchScore,
-      status: matchStatus(event, matchScore),
-      statusDetail: matchStatusDetail(event)
+      status: matchStatus(event, matchScore)
     };
   };
 
   window.renderFixtureCard = function renderFixtureCard(match) {
-    const detail = match.statusDetail
-      ? `<span class="fixture-status-detail status-detail-${statusClass(match.statusDetail).replace(/^status-/, "")}">${escapeHtml(match.statusDetail)}</span>`
-      : "";
-
     return `
       <article class="fixture-card ${isScotland(match) ? "is-scotland" : ""}">
         <div class="fixture-date">
@@ -65,41 +60,15 @@
           <div class="fixture-meta">${escapeHtml(match.venue)}</div>
         </div>
 
-        <span class="fixture-status ${statusClass(match.status)}">
-          <span>${escapeHtml(match.status)}</span>
-          ${detail}
-        </span>
+        <span class="fixture-status ${statusClass(match.status)}">${escapeHtml(match.status)}</span>
       </article>`;
   };
 
   window.matchStatus = function matchStatus(event, matchScore) {
-    const apiStatus = rawMatchStatus(event);
-    const lowerStatus = apiStatus.toLowerCase();
-
-    if (isAbandonedStatus(lowerStatus)) {
-      return titleStatus(apiStatus || "Postponed");
-    }
-
-    if (isFinishedStatus(lowerStatus)) {
-      return "FT";
-    }
-
-    if (isLiveStatus(lowerStatus) || matchStatusDetail(event) || appearsInPlay(event)) {
-      return "Live";
-    }
-
-    if (matchScore) {
-      return "FT";
-    }
-
-    return apiStatus ? titleStatus(apiStatus) : "Scheduled";
-  };
-
-  window.matchStatusDetail = function matchStatusDetail(event) {
     const status = rawMatchStatus(event).toLowerCase();
 
-    if (isFinishedStatus(status) || isAbandonedStatus(status)) {
-      return "";
+    if (isFinishedStatus(status)) {
+      return "FT";
     }
 
     if (isPenaltyStatus(status)) {
@@ -126,7 +95,15 @@
       return "1H";
     }
 
-    return "";
+    if (isLiveStatus(status) || appearsInPlay(event)) {
+      return "1H";
+    }
+
+    if (matchScore) {
+      return "FT";
+    }
+
+    return "NS";
   };
 
   window.isLiveStatus = function isLiveStatus(value) {
@@ -228,17 +205,5 @@
     const endWindow = kickoff.getTime() + 3.25 * 60 * 60 * 1000;
 
     return now >= startWindow && now <= endWindow;
-  }
-
-  function isAbandonedStatus(value) {
-    return /postponed|cancelled|canceled|abandoned|suspended|delayed/i.test(String(value || ""));
-  }
-
-  function titleStatus(value) {
-    return String(value || "")
-      .trim()
-      .replace(/[-_]+/g, " ")
-      .replace(/\s+/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 })();
