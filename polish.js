@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v11";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v12";
   }
 
   window.mapEvent = function mapEvent(event) {
@@ -81,7 +81,7 @@
     }
 
     if (isFinishedStatus(lowerStatus)) {
-      return "Result";
+      return "FT";
     }
 
     if (isLiveStatus(lowerStatus) || matchStatusDetail(event) || appearsInPlay(event)) {
@@ -89,7 +89,7 @@
     }
 
     if (matchScore) {
-      return "Result";
+      return "FT";
     }
 
     return apiStatus ? titleStatus(apiStatus) : "Scheduled";
