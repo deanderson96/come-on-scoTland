@@ -13,6 +13,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Scotland fixture filter
 - Group-stage fixture filter
 - Knockout fixture filter
+- Dynamic team fixture search powered by the rendered fixture list
 - Group tables when available from the data source
 - Knockout path when available from the data source
 - Europe/London kick-off rendering for BST tournament dates
@@ -56,7 +57,7 @@ The responses are de-duplicated in the browser using TheSportsDB event IDs first
 The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
 
 ```js
-CONFIG.cacheKey = "scotland-2026-world-cup-cache-v14";
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v15";
 ```
 
 Core API defaults remain in `script.js`:
@@ -138,6 +139,12 @@ The app displays one concise status badge for each match:
 TheSportsDB status and progress fields are normalised into those badge values in `polish.js`.
 
 If a match has a score but no explicit finished status, it is treated as `FT` unless the fixture is still inside the live kick-off window.
+
+## Team fixture search
+
+The fixture toolbar includes a team search field. It builds its suggestions from rendered fixture cards, then hides or shows fixture cards based on the selected or typed team name.
+
+It works alongside the existing fixture filters, so visitors can combine a team search with All fixtures, Scotland, Group stage or Knockout.
 
 ## Last updated
 
