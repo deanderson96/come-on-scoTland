@@ -56,7 +56,7 @@ The responses are de-duplicated in the browser using TheSportsDB event IDs first
 The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
 
 ```js
-CONFIG.cacheKey = "scotland-2026-world-cup-cache-v13";
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v14";
 ```
 
 Core API defaults remain in `script.js`:
