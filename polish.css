@@ -70,6 +70,12 @@ html {
   animation: live-pulse 1.4s infinite;
 }
 
+.fixture-status.status-ht {
+  color: #071a3d;
+  background: #fde68a;
+  box-shadow: 0 0 0 4px rgba(253, 230, 138, 0.2);
+}
+
 .fixture-status.status-result {
   color: #ffffff;
   background: var(--navy-900);
