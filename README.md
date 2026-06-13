@@ -152,12 +152,6 @@ The visible “Last updated” timestamp is generated from the most recent succe
 
 You do not need to manually update a timestamp.
 
-## ScotlandNT embed
-
-The page includes a direct X/Twitter timeline snippet for ScotlandNT in `index.html` only.
-
-External X embeds can be blocked by browser privacy settings, content blockers, or the X widget script itself. If the timeline does not hydrate, visitors may see a plain `Posts by ScotlandNT` link instead.
-
 ## Deploying to GitHub Pages
 
 1. Open the repository on GitHub.
