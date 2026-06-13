@@ -2,8 +2,13 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v14";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v15";
   }
+
+  const teamFilterState = {
+    teams: new Set(),
+    selected: ""
+  };
 
   window.mapEvent = function mapEvent(event) {
     const parsedTeams = parseTeamsFromEventName(event.strEvent || event.strEventAlternate || "");
@@ -50,7 +55,7 @@
       : "";
 
     return `
-      <article class="fixture-card ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}">
+      <article class="fixture-card ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}">
         <div class="fixture-date">
           ${shortDate(match.kickoff)}
           <strong>${kickoffTime(match.kickoff)}</strong>
@@ -148,6 +153,92 @@
       window.__scotland2026VisibilityRefreshBound = true;
     }
   };
+
+  document.addEventListener("DOMContentLoaded", setupTeamFixtureFilter);
+
+  function setupTeamFixtureFilter() {
+    const toolbar = document.querySelector(".toolbar");
+    const fixtureList = document.querySelector("#fixture-list");
+
+    if (!toolbar || !fixtureList || document.querySelector("#team-fixture-filter")) return;
+
+    const control = document.createElement("label");
+    control.className = "team-filter-control";
+    control.setAttribute("for", "team-fixture-filter");
+    control.innerHTML = `
+      <span>Team search</span>
+      <input id="team-fixture-filter" class="team-filter-input" list="team-fixture-options" type="search" placeholder="Search team fixtures" autocomplete="off" />
+      <datalist id="team-fixture-options"></datalist>
+    `;
+
+    toolbar.append(control);
+
+    const input = control.querySelector("#team-fixture-filter");
+    const datalist = control.querySelector("#team-fixture-options");
+
+    input.addEventListener("input", () => {
+      teamFilterState.selected = normalise(input.value);
+      applyTeamFixtureFilter();
+    });
+
+    document.querySelectorAll(".filter-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        window.requestAnimationFrame(() => {
+          collectTeamOptions(datalist);
+          applyTeamFixtureFilter();
+        });
+      });
+    });
+
+    const observer = new MutationObserver(() => {
+      collectTeamOptions(datalist);
+      applyTeamFixtureFilter();
+    });
+
+    observer.observe(fixtureList, { childList: true });
+    collectTeamOptions(datalist);
+  }
+
+  function collectTeamOptions(datalist) {
+    document.querySelectorAll(".fixture-card").forEach((card) => {
+      [card.dataset.homeTeam, card.dataset.awayTeam]
+        .map(clean)
+        .filter(isSelectableTeam)
+        .forEach((team) => teamFilterState.teams.add(team));
+    });
+
+    datalist.innerHTML = [...teamFilterState.teams]
+      .sort((a, b) => a.localeCompare(b))
+      .map((team) => `<option value="${escapeHtml(team)}"></option>`)
+      .join("");
+  }
+
+  function applyTeamFixtureFilter() {
+    const selected = teamFilterState.selected;
+    const cards = [...document.querySelectorAll(".fixture-card")];
+    const fixtureList = document.querySelector("#fixture-list");
+    let visibleCount = 0;
+
+    document.querySelector(".team-filter-empty")?.remove();
+
+    cards.forEach((card) => {
+      const teams = [card.dataset.homeTeam, card.dataset.awayTeam].map(normalise);
+      const visible = !selected || teams.some((team) => team.includes(selected));
+      card.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+
+    if (selected && fixtureList && cards.length && visibleCount === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state team-filter-empty";
+      empty.textContent = "No fixtures match that team search.";
+      fixtureList.append(empty);
+    }
+  }
+
+  function isSelectableTeam(team) {
+    return team && !/\b(winner|runner|third|match|tbc|fixture|opponent|group\s+[a-l])\b/i.test(team);
+  }
 
   function rawMatchStatus(event) {
     return clean([
