@@ -10,6 +10,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Decorative translucent player-name background
 - Tournament key info
 - API-driven fixture and result list
+- Click-to-expand match details for selected fixtures
 - Scotland fixture filter
 - Group-stage fixture filter
 - Knockout fixture filter
@@ -57,7 +58,7 @@ The responses are de-duplicated in the browser using TheSportsDB event IDs first
 The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
 
 ```js
-CONFIG.cacheKey = "scotland-2026-world-cup-cache-v16";
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v17";
 ```
 
 Core API defaults remain in `script.js`:
@@ -100,6 +101,20 @@ A fresh refresh can make up to 24 API requests:
 5. `lookuptable.php`
 
 If a fresh request fails, the site uses the most recent successful cached response from the visitor’s browser.
+
+## Match details
+
+Selecting a fixture card opens an inline match-details panel beneath that card.
+
+The panel keeps the fixture card layout unchanged, then attempts to load extra event-specific data from TheSportsDB:
+
+- `lookupevent.php` for fuller event information
+- `eventresults.php` for result information
+- `lookuplineup.php` for lineups
+- `lookuptimeline.php` for goals, cards and other timeline incidents
+- `lookupeventstats.php` for match statistics
+
+Availability depends on TheSportsDB data. For future fixtures, some sections may show fallback text such as “Lineups are not available yet.”
 
 ## API key
 
