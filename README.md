@@ -18,7 +18,7 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Europe/London kick-off rendering for BST tournament dates
 - Automatic 5-minute refresh checks while the page is visible
 - Browser cache fallback if fresh API requests fail
-- Live/result status handling for in-progress matches
+- Concise match-status badges: `NS`, `1H`, `HT`, `2H`, `ET1H`, `ET2H`, `PEN`, `FT`
 - Mobile responsive layout
 - Accessible semantic HTML
 - No backend
@@ -53,7 +53,13 @@ The JavaScript fetches and merges tournament data from multiple TheSportsDB endp
 
 The responses are de-duplicated in the browser using TheSportsDB event IDs first, then fixture date/time/team details.
 
-The main configuration is in `script.js`, with production polish overrides in `polish.js`:
+The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
+
+```js
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v13";
+```
+
+Core API defaults remain in `script.js`:
 
 ```js
 const CONFIG = {
@@ -61,7 +67,6 @@ const CONFIG = {
   publicKey: "123",
   worldCupLeagueId: "4429",
   season: "2026",
-  cacheKey: "scotland-2026-world-cup-cache-v8",
   cacheMinutes: 5,
   refreshMinutes: 5,
   timeoutMs: 10000,
@@ -117,17 +122,34 @@ No manual display offset is currently applied.
 
 ## Match status handling
 
-The app displays a match as **Live** when TheSportsDB reports an in-play status such as live, first half, second half, half-time, extra time or penalties.
+The app displays one concise status badge for each match:
 
-Finished statuses such as full time, after extra time and after penalties display as **Result**.
+| Badge | Meaning |
+| --- | --- |
+| `NS` | Not started |
+| `1H` | First half |
+| `HT` | Half time |
+| `2H` | Second half |
+| `ET1H` | Extra-time first half |
+| `ET2H` | Extra-time second half |
+| `PEN` | Penalty shootout |
+| `FT` | Full time / finished |
 
-If TheSportsDB provides a score but no status, the app uses the fixture kick-off window to avoid marking an in-progress match as a final result too early.
+TheSportsDB status and progress fields are normalised into those badge values in `polish.js`.
+
+If a match has a score but no explicit finished status, it is treated as `FT` unless the fixture is still inside the live kick-off window.
 
 ## Last updated
 
 The visible “Last updated” timestamp is generated from the most recent successful data fetch.
 
 You do not need to manually update a timestamp.
+
+## ScotlandNT embed
+
+The page includes a direct X/Twitter timeline snippet for ScotlandNT in `index.html` only.
+
+External X embeds can be blocked by browser privacy settings, content blockers, or the X widget script itself. If the timeline does not hydrate, visitors may see a plain `Posts by ScotlandNT` link instead.
 
 ## Deploying to GitHub Pages
 
@@ -215,7 +237,7 @@ background.css   Decorative hero name scramble
 standings.css    Compact standings tables and Saltire header mark
 polish.css       Interaction polish, status badges and finishing touches
 script.js        API client, rendering and data processing
-polish.js        Production behaviour overrides and live-status refinements
+polish.js        Production behaviour overrides and match-status refinements
 ```
 
 ## Credits
