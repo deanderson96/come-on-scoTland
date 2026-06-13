@@ -19,6 +19,8 @@
     };
   }
 
+  injectSubstitutionStyles();
+
   document.addEventListener("DOMContentLoaded", () => {
     const fixtureList = document.querySelector("#fixture-list");
     if (!fixtureList) return;
@@ -145,6 +147,54 @@
     const on = clean(changePart.match(/On:\s*(.*)$/i)?.[1]);
 
     return { off, on, team };
+  }
+
+  function injectSubstitutionStyles() {
+    if (document.querySelector("#substitution-change-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "substitution-change-styles";
+    style.textContent = `
+      .substitution-change {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.12rem;
+      }
+
+      .substitution-change span:not(.substitution-arrow) {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.26rem 0.48rem;
+        border-radius: 999px;
+        background: rgba(141, 216, 255, 0.18);
+        color: var(--navy-900);
+        font-weight: 850;
+      }
+
+      .substitution-change b {
+        color: var(--navy-700);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .substitution-arrow {
+        color: var(--navy-700);
+        font-weight: 950;
+      }
+
+      .match-timeline p small {
+        display: block;
+        margin-top: 0.24rem;
+        color: #667085;
+        font-weight: 800;
+      }
+    `;
+
+    document.head.append(style);
   }
 
   function clean(value) {
