@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v15";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v16";
   }
 
   const teamFilterState = {
@@ -185,6 +185,7 @@
       button.addEventListener("click", () => {
         window.requestAnimationFrame(() => {
           collectTeamOptions(datalist);
+          syncTeamFilterVisibility(control, input);
           applyTeamFixtureFilter();
         });
       });
@@ -192,11 +193,13 @@
 
     const observer = new MutationObserver(() => {
       collectTeamOptions(datalist);
+      syncTeamFilterVisibility(control, input);
       applyTeamFixtureFilter();
     });
 
     observer.observe(fixtureList, { childList: true });
     collectTeamOptions(datalist);
+    syncTeamFilterVisibility(control, input);
   }
 
   function collectTeamOptions(datalist) {
@@ -211,6 +214,21 @@
       .sort((a, b) => a.localeCompare(b))
       .map((team) => `<option value="${escapeHtml(team)}"></option>`)
       .join("");
+  }
+
+  function syncTeamFilterVisibility(control, input) {
+    const isScotlandFilter = activeFixtureFilter() === "scotland";
+    control.hidden = isScotlandFilter;
+
+    if (isScotlandFilter) {
+      input.value = "";
+      teamFilterState.selected = "";
+      document.querySelector(".team-filter-empty")?.remove();
+    }
+  }
+
+  function activeFixtureFilter() {
+    return document.querySelector(".filter-button.is-active")?.dataset.filter || "all";
   }
 
   function applyTeamFixtureFilter() {
