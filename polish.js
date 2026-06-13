@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v10";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v11";
   }
 
   window.mapEvent = function mapEvent(event) {
@@ -73,7 +73,7 @@
   };
 
   window.matchStatus = function matchStatus(event, matchScore) {
-    const apiStatus = clean(event.strStatus || event.strProgress || event.strLive || event.status);
+    const apiStatus = rawMatchStatus(event);
     const lowerStatus = apiStatus.toLowerCase();
 
     if (isAbandonedStatus(lowerStatus)) {
@@ -96,22 +96,34 @@
   };
 
   window.matchStatusDetail = function matchStatusDetail(event) {
-    const apiStatus = clean(event.strStatus || event.strProgress || event.strLive || event.status).toLowerCase();
+    const status = rawMatchStatus(event).toLowerCase();
 
-    if (isFinishedStatus(apiStatus) || isAbandonedStatus(apiStatus)) {
+    if (isFinishedStatus(status) || isAbandonedStatus(status)) {
       return "";
     }
 
-    if (isHalfTimeStatus(apiStatus)) {
-      return "HT";
-    }
-
-    if (isPenaltyStatus(apiStatus)) {
+    if (isPenaltyStatus(status)) {
       return "PEN";
     }
 
-    if (isExtraTimeStatus(apiStatus)) {
-      return "ET";
+    if (isExtraSecondHalfStatus(status)) {
+      return "ET2H";
+    }
+
+    if (isExtraFirstHalfStatus(status)) {
+      return "ET1H";
+    }
+
+    if (isHalfTimeStatus(status)) {
+      return "HT";
+    }
+
+    if (isSecondHalfStatus(status)) {
+      return "2H";
+    }
+
+    if (isFirstHalfStatus(status)) {
+      return "1H";
     }
 
     return "";
@@ -120,8 +132,8 @@
   window.isLiveStatus = function isLiveStatus(value) {
     const status = String(value || "").trim().toLowerCase();
 
-    return /^(live|in play|in-play|playing|1h|2h|et|pen|pens|penalties|ht)$/i.test(status) ||
-      /\blive\b|in progress|in-play|in play|first half|second half|half.?time|extra time|penalt/i.test(status);
+    return /^(live|in play|in-play|playing|1h|2h|ht|et|et1h|et2h|pen|pens|penalties)$/i.test(status) ||
+      /\blive\b|in progress|in-play|in play|first half|second half|half.?time|extra time|penalt|shootout/i.test(status);
   };
 
   window.isFinishedStatus = function isFinishedStatus(value) {
@@ -151,6 +163,25 @@
     }
   };
 
+  function rawMatchStatus(event) {
+    return clean([
+      event.strStatus,
+      event.strProgress,
+      event.strLive,
+      event.status,
+      event.strClock,
+      event.strTimeLine,
+      event.strPeriod
+    ].filter(Boolean).join(" "));
+  }
+
+  function isFirstHalfStatus(value) {
+    const status = String(value || "").trim().toLowerCase();
+
+    return /^(1h|1st half|first half|first-half|1st)$/i.test(status) ||
+      /\b(1h|1st half|first half|first-half)\b/.test(status);
+  }
+
   function isHalfTimeStatus(value) {
     const status = String(value || "").trim().toLowerCase();
 
@@ -158,11 +189,25 @@
       /\bhalf.?time\b/.test(status);
   }
 
-  function isExtraTimeStatus(value) {
+  function isSecondHalfStatus(value) {
     const status = String(value || "").trim().toLowerCase();
 
-    return /^(et|extra time|extra-time)$/i.test(status) ||
-      /\bextra.?time\b/.test(status);
+    return /^(2h|2nd half|second half|second-half|2nd)$/i.test(status) ||
+      /\b(2h|2nd half|second half|second-half)\b/.test(status);
+  }
+
+  function isExtraFirstHalfStatus(value) {
+    const status = String(value || "").trim().toLowerCase();
+
+    return /^(et1h|et 1h|extra time 1h|extra time first half|first half extra time|1st half extra time)$/i.test(status) ||
+      /\b(et1h|et 1h|extra time first half|first half extra time|1st half extra time)\b/.test(status);
+  }
+
+  function isExtraSecondHalfStatus(value) {
+    const status = String(value || "").trim().toLowerCase();
+
+    return /^(et2h|et 2h|extra time 2h|extra time second half|second half extra time|2nd half extra time)$/i.test(status) ||
+      /\b(et2h|et 2h|extra time second half|second half extra time|2nd half extra time)\b/.test(status);
   }
 
   function isPenaltyStatus(value) {
