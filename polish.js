@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v8";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v9";
   }
 
   window.matchStatus = function matchStatus(event, matchScore) {
@@ -15,6 +15,10 @@
 
     if (isFinishedStatus(lowerStatus)) {
       return "Result";
+    }
+
+    if (isHalfTimeStatus(lowerStatus)) {
+      return "HT";
     }
 
     if (isLiveStatus(lowerStatus)) {
@@ -35,8 +39,8 @@
   window.isLiveStatus = function isLiveStatus(value) {
     const status = String(value || "").trim().toLowerCase();
 
-    return /^(live|in play|in-play|playing|1h|2h|ht|et|pen|pens|penalties)$/i.test(status) ||
-      /\blive\b|in progress|in-play|in play|first half|second half|half.?time|extra time|penalt/i.test(status);
+    return /^(live|in play|in-play|playing|1h|2h|et|pen|pens|penalties)$/i.test(status) ||
+      /\blive\b|in progress|in-play|in play|first half|second half|extra time|penalt/i.test(status);
   };
 
   window.isFinishedStatus = function isFinishedStatus(value) {
@@ -65,6 +69,13 @@
       window.__scotland2026VisibilityRefreshBound = true;
     }
   };
+
+  function isHalfTimeStatus(value) {
+    const status = String(value || "").trim().toLowerCase();
+
+    return /^(ht|half time|half-time|halftime)$/i.test(status) ||
+      /\bhalf.?time\b/.test(status);
+  }
 
   function appearsInPlay(event) {
     if (typeof kickoffDate !== "function") return false;
