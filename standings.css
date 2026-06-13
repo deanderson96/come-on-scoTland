@@ -52,12 +52,6 @@
   color: rgba(255, 255, 255, 0.72);
 }
 
-.fixture-status.status-live {
-  color: var(--navy-950);
-  background: var(--sky-300);
-  box-shadow: 0 0 0 4px rgba(141, 216, 255, 0.16);
-}
-
 /*
  * Header mark: CSS-drawn Saltire.
  * Keeps the logo crisp on GitHub Pages without needing an image asset.
