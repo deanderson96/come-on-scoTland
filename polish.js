@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v13";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v14";
   }
 
   window.mapEvent = function mapEvent(event) {
@@ -27,6 +27,7 @@
       event.strEventAlternate
     ].join(" ")) ? "knockout" : "group";
     const matchScore = score(event);
+    const status = matchStatus(event, matchScore);
 
     return {
       id: clean(event.idEvent) || `${home}-${away}-${event.dateEvent}-${event.strTime}`,
@@ -38,13 +39,18 @@
       venue: clean([event.strVenue, event.strCity].filter(Boolean).join(", ")) || "Venue TBC",
       kickoff: kickoffDate(event),
       score: matchScore,
-      status: matchStatus(event, matchScore)
+      status,
+      isLive: isLiveMatchStatus(status)
     };
   };
 
   window.renderFixtureCard = function renderFixtureCard(match) {
+    const liveIndicator = match.isLive
+      ? `<span class="fixture-live-indicator" aria-label="Live match"><span aria-hidden="true"></span>Live</span>`
+      : "";
+
     return `
-      <article class="fixture-card ${isScotland(match) ? "is-scotland" : ""}">
+      <article class="fixture-card ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}">
         <div class="fixture-date">
           ${shortDate(match.kickoff)}
           <strong>${kickoffTime(match.kickoff)}</strong>
@@ -60,7 +66,10 @@
           <div class="fixture-meta">${escapeHtml(match.venue)}</div>
         </div>
 
-        <span class="fixture-status ${statusClass(match.status)}">${escapeHtml(match.status)}</span>
+        <div class="fixture-status-stack">
+          ${liveIndicator}
+          <span class="fixture-status ${statusClass(match.status)}">${escapeHtml(match.status)}</span>
+        </div>
       </article>`;
   };
 
@@ -150,6 +159,10 @@
       event.strTimeLine,
       event.strPeriod
     ].filter(Boolean).join(" "));
+  }
+
+  function isLiveMatchStatus(value) {
+    return /^(1H|HT|2H|ET1H|ET2H|PEN)$/i.test(clean(value));
   }
 
   function isFirstHalfStatus(value) {
