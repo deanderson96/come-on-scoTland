@@ -86,6 +86,7 @@ html {
   line-height: 1;
 }
 
+.fixture-status.status-ft,
 .fixture-status.status-result {
   color: #ffffff;
   background: var(--navy-900);
