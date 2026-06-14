@@ -1,13 +1,19 @@
 (() => {
   "use strict";
 
-  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v37";
+  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v38";
   const CACHE_PREFIX = "scotland-2026-world-cup-cache-v";
   const THEME_KEY = "scotland-2026-theme";
+  const THEME_MANUAL_UNTIL_KEY = "scotland-2026-theme-manual-until";
+  const DARK_START_HOUR = 22;
+  const LIGHT_START_HOUR = 8;
 
   installThemeStyles();
   applyStoredTheme();
-  document.addEventListener("DOMContentLoaded", setupThemeToggle);
+  document.addEventListener("DOMContentLoaded", () => {
+    setupThemeToggle();
+    scheduleThemeAutomation();
+  });
 
   if (typeof CONFIG === "object") {
     CONFIG.cacheKey = ACTIVE_CACHE_KEY;
@@ -310,15 +316,15 @@
   }
 
   function applyStoredTheme() {
-    let theme = "light";
+    const manualUntil = readManualThemeUntil();
 
-    try {
-      theme = localStorage.getItem(THEME_KEY) || "light";
-    } catch {
-      theme = "light";
+    if (manualUntil > Date.now()) {
+      setTheme(readStoredTheme() || scheduledTheme(), { persist: false });
+      return;
     }
 
-    setTheme(theme === "dark" ? "dark" : "light", { persist: false });
+    clearManualTheme();
+    applyScheduledTheme({ force: true });
   }
 
   function setupThemeToggle() {
@@ -337,11 +343,52 @@
 
     button.addEventListener("click", () => {
       const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      setTheme(nextTheme);
+      const manualUntil = nextThemeBoundary().getTime();
+      setTheme(nextTheme, { persist: true, manualUntil });
     });
 
     nav.insertBefore(button, navMenu);
     syncThemeToggle(button);
+  }
+
+  function scheduleThemeAutomation() {
+    window.clearInterval(window.__scotlandThemeScheduleTimer);
+    window.__scotlandThemeScheduleTimer = window.setInterval(applyScheduledTheme, 60 * 1000);
+
+    if (!window.__scotlandThemeVisibilityBound) {
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") applyScheduledTheme();
+      });
+      window.__scotlandThemeVisibilityBound = true;
+    }
+
+    applyScheduledTheme();
+  }
+
+  function applyScheduledTheme(options = {}) {
+    const manualUntil = readManualThemeUntil();
+
+    if (!options.force && manualUntil > Date.now()) return;
+
+    clearManualTheme();
+    setTheme(scheduledTheme(), { persist: false });
+  }
+
+  function scheduledTheme(date = new Date()) {
+    const hour = date.getHours();
+    return hour >= DARK_START_HOUR || hour < LIGHT_START_HOUR ? "dark" : "light";
+  }
+
+  function nextThemeBoundary(from = new Date()) {
+    const nextLight = new Date(from);
+    nextLight.setHours(LIGHT_START_HOUR, 0, 0, 0);
+    if (nextLight <= from) nextLight.setDate(nextLight.getDate() + 1);
+
+    const nextDark = new Date(from);
+    nextDark.setHours(DARK_START_HOUR, 0, 0, 0);
+    if (nextDark <= from) nextDark.setDate(nextDark.getDate() + 1);
+
+    return nextLight < nextDark ? nextLight : nextDark;
   }
 
   function setTheme(theme, options = {}) {
@@ -353,9 +400,12 @@
       metaTheme.setAttribute("content", nextTheme === "dark" ? "#020817" : "#071a3d");
     }
 
-    if (options.persist !== false) {
+    if (options.persist) {
       try {
         localStorage.setItem(THEME_KEY, nextTheme);
+        if (options.manualUntil) {
+          localStorage.setItem(THEME_MANUAL_UNTIL_KEY, String(options.manualUntil));
+        }
       } catch {
         // localStorage may be unavailable in restricted browsing modes.
       }
@@ -364,12 +414,37 @@
     syncThemeToggle(document.querySelector("#theme-toggle"));
   }
 
+  function readStoredTheme() {
+    try {
+      const value = localStorage.getItem(THEME_KEY);
+      return value === "dark" || value === "light" ? value : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function readManualThemeUntil() {
+    try {
+      return Number(localStorage.getItem(THEME_MANUAL_UNTIL_KEY) || 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  function clearManualTheme() {
+    try {
+      localStorage.removeItem(THEME_MANUAL_UNTIL_KEY);
+    } catch {
+      // localStorage may be unavailable in restricted browsing modes.
+    }
+  }
+
   function syncThemeToggle(button) {
     if (!button) return;
 
     const isDark = document.documentElement.dataset.theme === "dark";
     button.setAttribute("aria-pressed", String(isDark));
-    button.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    button.setAttribute("aria-label", isDark ? "Switch to light mode until the next automatic change" : "Switch to dark mode until the next automatic change");
     const label = button.querySelector(".theme-toggle__label");
     if (label) label.textContent = isDark ? "Light" : "Dark";
   }
