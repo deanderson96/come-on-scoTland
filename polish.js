@@ -1,8 +1,11 @@
 (() => {
   "use strict";
 
+  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v35";
+  const CACHE_PREFIX = "scotland-2026-world-cup-cache-v";
+
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v34";
+    CONFIG.cacheKey = ACTIVE_CACHE_KEY;
   }
 
   const GROUP_TEAMS = {
@@ -116,6 +119,21 @@
     }
   };
 
+  if (typeof loadData === "function") {
+    loadData = loadDataWithBackfill;
+    window.loadData = loadDataWithBackfill;
+  }
+
+  if (typeof readCache === "function") {
+    readCache = readBestCache;
+    window.readCache = readBestCache;
+  }
+
+  if (typeof writeCache === "function") {
+    writeCache = writeMergedCache;
+    window.writeCache = writeMergedCache;
+  }
+
   if (typeof renderGroupCard === "function") {
     renderGroupCard = renderCleanGroupCard;
     window.renderGroupCard = renderCleanGroupCard;
@@ -126,9 +144,121 @@
     window.renderGroupRow = renderLiveAwareGroupRow;
   }
 
+  async function loadDataWithBackfill() {
+    CONFIG.cacheKey = ACTIVE_CACHE_KEY;
+    const cached = readBestCache();
+
+    if (cached && !cacheExpired(cached.fetchedAt) && hasEnoughTournamentData(cached)) {
+      applyData(cached);
+      return;
+    }
+
+    try {
+      const fresh = await fetchTournamentData();
+      const merged = mergeTournamentData(fresh, cached);
+      writeMergedCache(merged);
+      applyData(merged);
+    } catch (error) {
+      console.warn("Fresh tournament data unavailable", error);
+
+      if (cached) {
+        applyData(cached);
+      } else {
+        renderUnavailable();
+      }
+    }
+  }
+
+  function readBestCache() {
+    try {
+      const caches = cacheKeys()
+        .map((key) => parseCachedValue(localStorage.getItem(key)))
+        .filter(Boolean)
+        .sort(scoreCachedData);
+
+      return caches[0] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeMergedCache(data) {
+    try {
+      CONFIG.cacheKey = ACTIVE_CACHE_KEY;
+      localStorage.setItem(ACTIVE_CACHE_KEY, JSON.stringify(data));
+    } catch {
+      // localStorage may be unavailable in restricted browsing modes.
+    }
+  }
+
+  function mergeTournamentData(fresh, cached) {
+    if (!cached) return fresh;
+
+    const rawEvents = uniqueEvents([
+      ...safeArray(fresh.rawEvents),
+      ...safeArray(cached.rawEvents)
+    ]);
+    const rawTable = uniqueTableRows([
+      ...safeArray(fresh.rawTable),
+      ...safeArray(cached.rawTable)
+    ]);
+
+    return {
+      fetchedAt: fresh.fetchedAt || new Date().toISOString(),
+      rawEvents,
+      rawTable
+    };
+  }
+
+  function cacheKeys() {
+    const keys = [ACTIVE_CACHE_KEY];
+
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith(CACHE_PREFIX) && !keys.includes(key)) {
+        keys.push(key);
+      }
+    }
+
+    return keys;
+  }
+
+  function parseCachedValue(value) {
+    if (!value) return null;
+
+    try {
+      const parsed = JSON.parse(value);
+      if (!parsed || !Array.isArray(parsed.rawEvents) || !Array.isArray(parsed.rawTable)) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  function scoreCachedData(a, b) {
+    const aScore = cacheDataScore(a);
+    const bScore = cacheDataScore(b);
+
+    if (aScore !== bScore) return bScore - aScore;
+    return new Date(b.fetchedAt || 0).getTime() - new Date(a.fetchedAt || 0).getTime();
+  }
+
+  function cacheDataScore(data) {
+    return safeArray(data.rawEvents).length + safeArray(data.rawTable).length * 2;
+  }
+
+  function hasEnoughTournamentData(data) {
+    return safeArray(data.rawEvents).length >= 24 || safeArray(data.rawTable).length >= 24;
+  }
+
+  function safeArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
   function renderCleanGroupCard(group) {
-    const body = group.teams.length
-      ? group.teams.map(renderGroupRow).join("")
+    const rows = group.teams.length ? group.teams : seedGroupRows(group.name);
+    const body = rows.length
+      ? rows.map(renderGroupRow).join("")
       : `<tr><td class="group-empty" colspan="9">Awaiting API group teams</td></tr>`;
 
     return `
@@ -154,6 +284,24 @@
           <tbody>${body}</tbody>
         </table>
       </article>`;
+  }
+
+  function seedGroupRows(groupNameValue) {
+    const match = clean(groupNameValue).match(/Group\s+([A-L])/i);
+    if (!match) return [];
+
+    return (GROUP_TEAMS[match[1].toUpperCase()] || []).slice(0, 4).map((team) => ({
+      team,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      gf: 0,
+      ga: 0,
+      gd: 0,
+      pts: 0,
+      tableBacked: false
+    }));
   }
 
   function renderLiveAwareGroupRow(row) {
@@ -187,9 +335,9 @@
   function liveTeamNames() {
     const teams = new Set();
 
-    if (!window.state && typeof state === "undefined") return teams;
+    if (typeof state === "undefined" || !state?.fixtures) return teams;
 
-    (state.fixtures || []).forEach((match) => {
+    state.fixtures.forEach((match) => {
       if (!match.isLive && !isLiveMatchStatus(match.status)) return;
       teams.add(normaliseTeamName(match.home));
       teams.add(normaliseTeamName(match.away));
