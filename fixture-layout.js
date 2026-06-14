@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v25";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v26";
   }
 
   const originalApplyData = window.applyData;
@@ -13,6 +13,13 @@
     renderFixtures = renderGroupedFixtures;
     window.renderFixtures = renderGroupedFixtures;
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const todayText = document.querySelector("#today .section-heading p:last-child");
+    if (todayText) {
+      todayText.textContent = "Matches scheduled for today in Europe/London time.";
+    }
+  });
 
   function renderGroupedFixtures(filter = "all") {
     if (!els.fixtureList) return;
