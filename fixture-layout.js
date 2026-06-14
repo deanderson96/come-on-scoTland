@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v39";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v40";
   }
 
   const originalApplyData = window.applyData;
@@ -398,6 +398,9 @@
       return `Group ${groupMatch[1].toUpperCase()}`;
     }
 
+    const apiStateGroup = groupFromApiState(match.home, match.away);
+    if (apiStateGroup) return apiStateGroup;
+
     const cleanedStage = stage
       .replace(/FIFA\s+World\s+Cup\s*[,\-–—:]?\s*/i, "")
       .replace(/^World\s+Cup\s*[,\-–—:]?\s*/i, "")
@@ -406,6 +409,31 @@
     if (groupValue) return groupValue;
     if (cleanedStage && !/^group\s*stage$/i.test(cleanedStage)) return cleanedStage;
     return match.phase === "knockout" ? "Knockout" : "Group stage";
+  }
+
+  function groupFromApiState(home, away) {
+    if (typeof state === "undefined" || !Array.isArray(state.groups)) return "";
+
+    const homeKey = normaliseName(home);
+    const awayKey = normaliseName(away);
+    if (!homeKey || !awayKey) return "";
+
+    return state.groups.find((group) => {
+      if (!Array.isArray(group.teams) || !/^Group\s+[A-L]$/i.test(group.name || "")) return false;
+      const teamKeys = group.teams.map((row) => normaliseName(row.team));
+      return teamKeys.includes(homeKey) && teamKeys.includes(awayKey);
+    })?.name || "";
+  }
+
+  function normaliseName(value) {
+    return clean(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/&/g, "and")
+      .replace(/\bthe\b/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   }
 
   function kickoffHour(date) {
