@@ -2,8 +2,30 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v30";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v31";
   }
+
+  const GROUP_TEAMS = {
+    A: ["Mexico", "South Africa", "South Korea", "Czechia"],
+    B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+    C: ["Brazil", "Morocco", "Haiti", "Scotland"],
+    D: ["United States", "Paraguay", "Australia", "Turkey"],
+    E: ["Germany", "Curacao", "Curaçao", "Ivory Coast", "Ecuador"],
+    F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
+    G: ["Belgium", "Egypt", "Iran", "New Zealand"],
+    H: ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+    I: ["France", "Senegal", "Iraq", "Norway"],
+    J: ["Argentina", "Algeria", "Austria", "Jordan"],
+    K: ["Portugal", "DR Congo", "Democratic Republic of the Congo", "Uzbekistan", "Colombia"],
+    L: ["England", "Croatia", "Ghana", "Panama"]
+  };
+
+  const TEAM_TO_GROUP = Object.entries(GROUP_TEAMS).reduce((lookup, [group, teams]) => {
+    teams.forEach((team) => {
+      lookup.set(normaliseTeamName(team), `Group ${group}`);
+    });
+    return lookup;
+  }, new Map());
 
   window.mapEvent = function mapEvent(event) {
     const parsedTeams = parseTeamsFromEventName(event.strEvent || event.strEventAlternate || "");
@@ -17,7 +39,7 @@
       event.strEventAlternate,
       event.strDescriptionEN,
       event.strDescription
-    ].join(" "));
+    ].join(" ")) || inferGroupFromTeams(home, away);
     const stage = group || stageName(event);
     const phase = isKnockoutStage([
       stage,
@@ -93,6 +115,25 @@
       window.__scotland2026VisibilityRefreshBound = true;
     }
   };
+
+  function inferGroupFromTeams(home, away) {
+    const homeGroup = TEAM_TO_GROUP.get(normaliseTeamName(home));
+    const awayGroup = TEAM_TO_GROUP.get(normaliseTeamName(away));
+
+    if (homeGroup && homeGroup === awayGroup) return homeGroup;
+    return homeGroup || awayGroup || "";
+  }
+
+  function normaliseTeamName(value) {
+    return clean(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/&/g, "and")
+      .replace(/\bthe\b/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
 
   function rawMatchStatus(event) {
     return clean([
