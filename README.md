@@ -10,7 +10,8 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 - Decorative translucent player-name background
 - Tournament key info
 - API-driven fixture and result list
-- Click-to-expand match details for selected fixtures
+- Today’s fixtures section
+- Compact fixture cards grouped in collapsible date sections
 - Scotland fixture filter
 - Group-stage fixture filter
 - Knockout fixture filter
@@ -36,8 +37,10 @@ The site is built with plain HTML, CSS and JavaScript and is ready to deploy on 
 ├── background.css
 ├── standings.css
 ├── polish.css
+├── fixture-layout.css
 ├── script.js
 ├── polish.js
+├── fixture-layout.js
 └── README.md
 ```
 
@@ -55,10 +58,10 @@ The JavaScript fetches and merges tournament data from multiple TheSportsDB endp
 
 The responses are de-duplicated in the browser using TheSportsDB event IDs first, then fixture date/time/team details.
 
-The main configuration is in `script.js`, with production polish overrides in `polish.js`. The live site currently bumps the browser cache key in `polish.js`:
+The main configuration is in `script.js`, with production polish overrides in `polish.js` and fixture layout refinements in `fixture-layout.js`. The live site currently bumps the browser cache key to:
 
 ```js
-CONFIG.cacheKey = "scotland-2026-world-cup-cache-v17";
+CONFIG.cacheKey = "scotland-2026-world-cup-cache-v26";
 ```
 
 Core API defaults remain in `script.js`:
@@ -102,20 +105,6 @@ A fresh refresh can make up to 24 API requests:
 
 If a fresh request fails, the site uses the most recent successful cached response from the visitor’s browser.
 
-## Match details
-
-Selecting a fixture card opens an inline match-details panel beneath that card.
-
-The panel keeps the fixture card layout unchanged, then attempts to load extra event-specific data from TheSportsDB:
-
-- `lookupevent.php` for fuller event information
-- `eventresults.php` for result information
-- `lookuplineup.php` for lineups
-- `lookuptimeline.php` for goals, cards and other timeline incidents
-- `lookupeventstats.php` for match statistics
-
-Availability depends on TheSportsDB data. For future fixtures, some sections may show fallback text such as “Lineups are not available yet.”
-
 ## API key
 
 The included public TheSportsDB v1 key is:
@@ -135,6 +124,24 @@ All displayed fixture times are rendered in **Europe/London** time.
 The script treats bare TheSportsDB timestamps as UTC before converting them to Europe/London time. During the tournament window, Europe/London displays as **BST**.
 
 No manual display offset is currently applied.
+
+## Fixture layout
+
+Fixtures are grouped by calendar date in collapsible sections. Today’s fixtures are displayed in a dedicated section, and the main fixture list can be filtered by:
+
+- All fixtures
+- Scotland
+- Group stage
+- Knockout
+- Team search
+
+Each compact fixture card contains only the essential match information:
+
+- kick-off time
+- group or stage
+- teams
+- live indicator when applicable
+- status badge
 
 ## Match status handling
 
@@ -157,7 +164,7 @@ If a match has a score but no explicit finished status, it is treated as `FT` un
 
 ## Team fixture search
 
-The fixture toolbar includes a team search field for All fixtures, Group stage and Knockout views. It builds suggestions from rendered fixture cards, then hides or shows fixture cards based on the selected or typed team name.
+The fixture toolbar includes a team search field for All fixtures, Group stage and Knockout views. It builds suggestions from the main rendered fixture list, then hides or shows fixture cards and empty date groups based on the selected or typed team name.
 
 The search is hidden and cleared in the Scotland view, because the Scotland filter already shows Scotland fixtures only.
 
@@ -248,12 +255,14 @@ Increase this only if TheSportsDB starts publishing tournament events under addi
 Core layout controls are split across:
 
 ```text
-styles.css       Main layout, hero, cards, fixtures, footer
-background.css   Decorative hero name scramble
-standings.css    Compact standings tables and Saltire header mark
-polish.css       Interaction polish, status badges and finishing touches
-script.js        API client, rendering and data processing
-polish.js        Production behaviour overrides and match-status refinements
+styles.css          Main layout, hero, cards, footer
+background.css      Decorative hero name scramble
+standings.css       Compact standings tables and Saltire header mark
+polish.css          Interaction polish, status badges and finishing touches
+fixture-layout.css  Grouped fixture dropdown layout
+script.js           API client, rendering and data processing
+polish.js           Production behaviour overrides and match-status refinements
+fixture-layout.js   Today section and grouped fixture rendering
 ```
 
 ## Credits
