@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v32";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v34";
   }
 
   const GROUP_TEAMS = {
@@ -116,9 +116,44 @@
     }
   };
 
+  if (typeof renderGroupCard === "function") {
+    renderGroupCard = renderCleanGroupCard;
+    window.renderGroupCard = renderCleanGroupCard;
+  }
+
   if (typeof renderGroupRow === "function") {
     renderGroupRow = renderLiveAwareGroupRow;
     window.renderGroupRow = renderLiveAwareGroupRow;
+  }
+
+  function renderCleanGroupCard(group) {
+    const body = group.teams.length
+      ? group.teams.map(renderGroupRow).join("")
+      : `<tr><td class="group-empty" colspan="9">Awaiting API group teams</td></tr>`;
+
+    return `
+      <article class="group-card">
+        <div class="group-header">
+          <span class="group-label">${escapeHtml(group.name)}</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Team</th>
+              <th scope="col">P</th>
+              <th scope="col">W</th>
+              <th scope="col">D</th>
+              <th scope="col">L</th>
+              <th scope="col">GF</th>
+              <th scope="col">GA</th>
+              <th scope="col">GD</th>
+              <th scope="col">Pts</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </article>`;
   }
 
   function renderLiveAwareGroupRow(row) {
