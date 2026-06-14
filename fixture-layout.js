@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v23";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v24";
   }
 
   const originalApplyData = window.applyData;
@@ -88,18 +88,27 @@
       return;
     }
 
-    list.innerHTML = renderFixtureGroups(fixtures, { compactHeading: true });
+    list.innerHTML = renderFixtureGroups(fixtures, { compactHeading: true, openAll: true });
   }
 
   function renderFixtureGroups(fixtures, options = {}) {
     return [...groupFixturesByDay(fixtures).entries()]
-      .map(([key, matches]) => `
-        <section class="fixture-day-group" data-day="${escapeHtml(key)}">
-          <h3 class="fixture-day-heading">${escapeHtml(dayLabel(matches[0]?.kickoff, options.compactHeading))}</h3>
-          <div class="fixture-day-card">
-            ${matches.map(window.renderFixtureCard).join("")}
-          </div>
-        </section>`)
+      .map(([key, matches]) => {
+        const label = dayLabel(matches[0]?.kickoff, options.compactHeading);
+        const open = options.openAll || key === dateKey(new Date()) ? " open" : "";
+        const count = matches.length;
+
+        return `
+          <details class="fixture-day-group" data-day="${escapeHtml(key)}"${open}>
+            <summary class="fixture-day-heading">
+              <span>${escapeHtml(label)}</span>
+              <small>${count} fixture${count === 1 ? "" : "s"}</small>
+            </summary>
+            <div class="fixture-day-card">
+              ${matches.map(window.renderFixtureCard).join("")}
+            </div>
+          </details>`;
+      })
       .join("");
   }
 
