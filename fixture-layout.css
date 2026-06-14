@@ -139,8 +139,7 @@
   line-height: 1.08;
 }
 
-.fixture-row-team.is-leading,
-.fixture-card:not(.status-ns) .fixture-row-team:has(strong:not(:empty)) {
+.fixture-row-team.is-leading {
   color: rgba(255, 255, 255, 0.94);
 }
 
