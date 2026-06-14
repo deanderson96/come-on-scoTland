@@ -1,8 +1,13 @@
 (() => {
   "use strict";
 
-  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v36";
+  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v37";
   const CACHE_PREFIX = "scotland-2026-world-cup-cache-v";
+  const THEME_KEY = "scotland-2026-theme";
+
+  installThemeStyles();
+  applyStoredTheme();
+  document.addEventListener("DOMContentLoaded", setupThemeToggle);
 
   if (typeof CONFIG === "object") {
     CONFIG.cacheKey = ACTIVE_CACHE_KEY;
@@ -120,6 +125,253 @@
   if (typeof renderGroupRow === "function") {
     renderGroupRow = renderLiveAwareGroupRow;
     window.renderGroupRow = renderLiveAwareGroupRow;
+  }
+
+  function installThemeStyles() {
+    if (document.querySelector("#scotland-theme-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "scotland-theme-styles";
+    style.textContent = `
+      .theme-toggle {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.52rem;
+        min-height: 42px;
+        margin-left: auto;
+        padding: 0.32rem 0.42rem 0.32rem 0.76rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.88);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        font-size: 0.72rem;
+        font-weight: 950;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        text-transform: uppercase;
+        transition: border-color var(--transition), background var(--transition), transform var(--transition);
+      }
+
+      .theme-toggle:hover,
+      .theme-toggle:focus-visible {
+        transform: translateY(-1px);
+        border-color: rgba(141, 216, 255, 0.45);
+        background: rgba(141, 216, 255, 0.14);
+        outline: none;
+      }
+
+      .theme-toggle__track {
+        position: relative;
+        width: 2.45rem;
+        height: 1.45rem;
+        border-radius: 999px;
+        background: rgba(141, 216, 255, 0.24);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      }
+
+      .theme-toggle__thumb {
+        position: absolute;
+        top: 0.22rem;
+        left: 0.24rem;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 5px 12px rgba(3, 11, 29, 0.24);
+        transition: transform 220ms cubic-bezier(.2,.85,.2,1), background 220ms ease;
+      }
+
+      html[data-theme="dark"] .theme-toggle__thumb {
+        transform: translateX(0.95rem);
+        background: var(--sky-300);
+      }
+
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --ink: #eef6ff;
+        --muted: #b8c6d8;
+        --paper: #071226;
+        --cream: #0b1730;
+        --line: rgba(185, 232, 255, 0.18);
+      }
+
+      html[data-theme="dark"] body {
+        color: #edf7ff;
+        background:
+          radial-gradient(circle at 12% 4%, rgba(141, 216, 255, 0.18), transparent 30rem),
+          radial-gradient(circle at 90% 22%, rgba(18, 51, 109, 0.5), transparent 24rem),
+          linear-gradient(180deg, #020817 0%, #071226 48%, #020817 100%);
+      }
+
+      html[data-theme="dark"] body::before {
+        opacity: 0.18;
+        background-image:
+          linear-gradient(rgba(141, 216, 255, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(141, 216, 255, 0.08) 1px, transparent 1px);
+      }
+
+      html[data-theme="dark"] .section-heading h2,
+      html[data-theme="dark"] .match-details-header h3 {
+        color: #f5fbff;
+      }
+
+      html[data-theme="dark"] .section-heading p,
+      html[data-theme="dark"] .knockout-card p,
+      html[data-theme="dark"] .empty-state {
+        color: rgba(237, 247, 255, 0.74);
+      }
+
+      html[data-theme="dark"] .eyebrow {
+        color: var(--sky-200);
+      }
+
+      html[data-theme="dark"] .quick-info,
+      html[data-theme="dark"] .today-fixtures-section,
+      html[data-theme="dark"] .section:not(.hero):not(.section-navy) {
+        background: transparent;
+      }
+
+      html[data-theme="dark"] .stat-card,
+      html[data-theme="dark"] .fixture-day-heading,
+      html[data-theme="dark"] .fixture-day-card,
+      html[data-theme="dark"] .fixture-list .fixture-card,
+      html[data-theme="dark"] .fixture-card.is-compact,
+      html[data-theme="dark"] .group-card,
+      html[data-theme="dark"] .knockout-card,
+      html[data-theme="dark"] .empty-state {
+        border-color: rgba(185, 232, 255, 0.14);
+        color: #edf7ff;
+        background:
+          linear-gradient(135deg, rgba(141, 216, 255, 0.08), transparent 42%),
+          rgba(8, 21, 45, 0.82);
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.26);
+      }
+
+      html[data-theme="dark"] .fixture-list .fixture-card:hover,
+      html[data-theme="dark"] .fixture-list .fixture-card:focus-visible {
+        background:
+          linear-gradient(90deg, rgba(141, 216, 255, 0.16), transparent 46%),
+          rgba(10, 27, 58, 0.94);
+        box-shadow: inset 4px 0 0 rgba(141, 216, 255, 0.8), 0 18px 42px rgba(0, 0, 0, 0.28);
+      }
+
+      html[data-theme="dark"] .fixture-list .fixture-card.is-scotland,
+      html[data-theme="dark"] .fixture-card.is-scotland {
+        background:
+          linear-gradient(90deg, rgba(141, 216, 255, 0.2), transparent 48%),
+          rgba(9, 25, 54, 0.94);
+      }
+
+      html[data-theme="dark"] .fixture-row-stage,
+      html[data-theme="dark"] .fixture-row-time,
+      html[data-theme="dark"] .fixture-row-team,
+      html[data-theme="dark"] .team-name,
+      html[data-theme="dark"] .group-card td,
+      html[data-theme="dark"] .group-card th {
+        color: rgba(237, 247, 255, 0.78);
+      }
+
+      html[data-theme="dark"] .fixture-row-team.is-leading,
+      html[data-theme="dark"] .group-card td:first-child,
+      html[data-theme="dark"] .group-card strong {
+        color: #ffffff;
+      }
+
+      html[data-theme="dark"] .fixture-row-time span {
+        background: rgba(141, 216, 255, 0.1);
+      }
+
+      html[data-theme="dark"] .section-navy {
+        background:
+          radial-gradient(circle at 12% 18%, rgba(141, 216, 255, 0.15), transparent 26rem),
+          linear-gradient(180deg, #030b1d, #06142d);
+      }
+
+      html[data-theme="dark"] .group-card tbody tr.is-playing {
+        background: linear-gradient(90deg, rgba(254, 226, 226, 0.18), rgba(141, 216, 255, 0.08));
+      }
+
+      @media (max-width: 720px) {
+        .theme-toggle {
+          margin-left: 0;
+          padding-left: 0.64rem;
+        }
+
+        .theme-toggle__label {
+          display: none;
+        }
+      }
+    `;
+
+    document.head.append(style);
+  }
+
+  function applyStoredTheme() {
+    let theme = "light";
+
+    try {
+      theme = localStorage.getItem(THEME_KEY) || "light";
+    } catch {
+      theme = "light";
+    }
+
+    setTheme(theme === "dark" ? "dark" : "light", { persist: false });
+  }
+
+  function setupThemeToggle() {
+    const nav = document.querySelector(".nav");
+    const navMenu = document.querySelector("#nav-menu");
+    if (!nav || !navMenu || document.querySelector("#theme-toggle")) return;
+
+    const button = document.createElement("button");
+    button.id = "theme-toggle";
+    button.className = "theme-toggle";
+    button.type = "button";
+    button.innerHTML = `
+      <span class="theme-toggle__label">Dark</span>
+      <span class="theme-toggle__track" aria-hidden="true"><span class="theme-toggle__thumb"></span></span>
+    `;
+
+    button.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      setTheme(nextTheme);
+    });
+
+    nav.insertBefore(button, navMenu);
+    syncThemeToggle(button);
+  }
+
+  function setTheme(theme, options = {}) {
+    const nextTheme = theme === "dark" ? "dark" : "light";
+    document.documentElement.dataset.theme = nextTheme;
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute("content", nextTheme === "dark" ? "#020817" : "#071a3d");
+    }
+
+    if (options.persist !== false) {
+      try {
+        localStorage.setItem(THEME_KEY, nextTheme);
+      } catch {
+        // localStorage may be unavailable in restricted browsing modes.
+      }
+    }
+
+    syncThemeToggle(document.querySelector("#theme-toggle"));
+  }
+
+  function syncThemeToggle(button) {
+    if (!button) return;
+
+    const isDark = document.documentElement.dataset.theme === "dark";
+    button.setAttribute("aria-pressed", String(isDark));
+    button.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    const label = button.querySelector(".theme-toggle__label");
+    if (label) label.textContent = isDark ? "Light" : "Dark";
   }
 
   async function loadDataWithBackfill() {
