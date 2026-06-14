@@ -1,34 +1,12 @@
 (() => {
   "use strict";
 
-  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v35";
+  const ACTIVE_CACHE_KEY = "scotland-2026-world-cup-cache-v36";
   const CACHE_PREFIX = "scotland-2026-world-cup-cache-v";
 
   if (typeof CONFIG === "object") {
     CONFIG.cacheKey = ACTIVE_CACHE_KEY;
   }
-
-  const GROUP_TEAMS = {
-    A: ["Mexico", "South Africa", "South Korea", "Czechia"],
-    B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
-    C: ["Brazil", "Morocco", "Haiti", "Scotland"],
-    D: ["United States", "Paraguay", "Australia", "Turkey"],
-    E: ["Germany", "Curacao", "Curaçao", "Ivory Coast", "Ecuador"],
-    F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
-    G: ["Belgium", "Egypt", "Iran", "New Zealand"],
-    H: ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
-    I: ["France", "Senegal", "Iraq", "Norway"],
-    J: ["Argentina", "Algeria", "Austria", "Jordan"],
-    K: ["Portugal", "DR Congo", "Democratic Republic of the Congo", "Uzbekistan", "Colombia"],
-    L: ["England", "Croatia", "Ghana", "Panama"]
-  };
-
-  const TEAM_TO_GROUP = Object.entries(GROUP_TEAMS).reduce((lookup, [group, teams]) => {
-    teams.forEach((team) => {
-      lookup.set(normaliseTeamName(team), `Group ${group}`);
-    });
-    return lookup;
-  }, new Map());
 
   window.mapEvent = function mapEvent(event) {
     const parsedTeams = parseTeamsFromEventName(event.strEvent || event.strEventAlternate || "");
@@ -42,7 +20,7 @@
       event.strEventAlternate,
       event.strDescriptionEN,
       event.strDescription
-    ].join(" ")) || inferGroupFromTeams(home, away);
+    ].join(" "));
     const stage = group || stageName(event);
     const phase = isKnockoutStage([
       stage,
@@ -256,9 +234,8 @@
   }
 
   function renderCleanGroupCard(group) {
-    const rows = group.teams.length ? group.teams : seedGroupRows(group.name);
-    const body = rows.length
-      ? rows.map(renderGroupRow).join("")
+    const body = group.teams.length
+      ? group.teams.map(renderGroupRow).join("")
       : `<tr><td class="group-empty" colspan="9">Awaiting API group teams</td></tr>`;
 
     return `
@@ -284,24 +261,6 @@
           <tbody>${body}</tbody>
         </table>
       </article>`;
-  }
-
-  function seedGroupRows(groupNameValue) {
-    const match = clean(groupNameValue).match(/Group\s+([A-L])/i);
-    if (!match) return [];
-
-    return (GROUP_TEAMS[match[1].toUpperCase()] || []).slice(0, 4).map((team) => ({
-      team,
-      played: 0,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      gf: 0,
-      ga: 0,
-      gd: 0,
-      pts: 0,
-      tableBacked: false
-    }));
   }
 
   function renderLiveAwareGroupRow(row) {
@@ -344,14 +303,6 @@
     });
 
     return teams;
-  }
-
-  function inferGroupFromTeams(home, away) {
-    const homeGroup = TEAM_TO_GROUP.get(normaliseTeamName(home));
-    const awayGroup = TEAM_TO_GROUP.get(normaliseTeamName(away));
-
-    if (homeGroup && homeGroup === awayGroup) return homeGroup;
-    return homeGroup || awayGroup || "";
   }
 
   function normaliseTeamName(value) {
