@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v31";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v32";
   }
 
   const GROUP_TEAMS = {
@@ -115,6 +115,53 @@
       window.__scotland2026VisibilityRefreshBound = true;
     }
   };
+
+  if (typeof renderGroupRow === "function") {
+    renderGroupRow = renderLiveAwareGroupRow;
+    window.renderGroupRow = renderLiveAwareGroupRow;
+  }
+
+  function renderLiveAwareGroupRow(row) {
+    const isScotlandRow = normalise(row.team) === "scotland";
+    const isLiveRow = liveTeamNames().has(normaliseTeamName(row.team));
+    const classes = [isScotlandRow ? "is-scotland" : "", isLiveRow ? "is-playing" : ""]
+      .filter(Boolean)
+      .join(" ");
+    const liveMarker = isLiveRow ? `<span class="standings-live-marker" aria-label="Currently playing">Live</span>` : "";
+
+    return `
+      <tr class="${classes}">
+        <td>
+          <span class="team-name">
+            <span class="team-dot" aria-hidden="true"></span>
+            ${escapeHtml(row.team)}
+            ${liveMarker}
+          </span>
+        </td>
+        <td>${number(row.played)}</td>
+        <td>${number(row.won)}</td>
+        <td>${number(row.drawn)}</td>
+        <td>${number(row.lost)}</td>
+        <td>${number(row.gf)}</td>
+        <td>${number(row.ga)}</td>
+        <td>${goalDiff(number(row.gd))}</td>
+        <td><strong>${number(row.pts)}</strong></td>
+      </tr>`;
+  }
+
+  function liveTeamNames() {
+    const teams = new Set();
+
+    if (!window.state && typeof state === "undefined") return teams;
+
+    (state.fixtures || []).forEach((match) => {
+      if (!match.isLive && !isLiveMatchStatus(match.status)) return;
+      teams.add(normaliseTeamName(match.home));
+      teams.add(normaliseTeamName(match.away));
+    });
+
+    return teams;
+  }
 
   function inferGroupFromTeams(home, away) {
     const homeGroup = TEAM_TO_GROUP.get(normaliseTeamName(home));
