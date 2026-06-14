@@ -2,13 +2,8 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v29";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v30";
   }
-
-  const teamFilterState = {
-    teams: new Set(),
-    selected: ""
-  };
 
   window.mapEvent = function mapEvent(event) {
     const parsedTeams = parseTeamsFromEventName(event.strEvent || event.strEventAlternate || "");
@@ -98,142 +93,6 @@
       window.__scotland2026VisibilityRefreshBound = true;
     }
   };
-
-  document.addEventListener("DOMContentLoaded", setupTeamFixtureFilter);
-
-  function setupTeamFixtureFilter() {
-    const toolbar = document.querySelector(".toolbar");
-    const fixtureList = document.querySelector("#fixture-list");
-
-    if (!toolbar || !fixtureList || document.querySelector("#team-fixture-filter")) return;
-
-    const control = document.createElement("label");
-    control.className = "team-filter-control";
-    control.setAttribute("for", "team-fixture-filter");
-    control.innerHTML = `
-      <span>Team search</span>
-      <input id="team-fixture-filter" class="team-filter-input" list="team-fixture-options" type="search" placeholder="Search team fixtures" autocomplete="off" />
-      <datalist id="team-fixture-options"></datalist>
-    `;
-
-    toolbar.append(control);
-
-    const input = control.querySelector("#team-fixture-filter");
-    const datalist = control.querySelector("#team-fixture-options");
-
-    input.addEventListener("input", () => {
-      teamFilterState.selected = normalise(input.value);
-      applyTeamFixtureFilter();
-    });
-
-    document.querySelectorAll(".filter-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        window.requestAnimationFrame(() => {
-          collectTeamOptions(datalist);
-          syncTeamFilterVisibility(control, input);
-          applyTeamFixtureFilter();
-        });
-      });
-    });
-
-    const observer = new MutationObserver(() => {
-      collectTeamOptions(datalist);
-      syncTeamFilterVisibility(control, input);
-      applyTeamFixtureFilter();
-    });
-
-    observer.observe(fixtureList, { childList: true, subtree: true });
-    collectTeamOptions(datalist);
-    syncTeamFilterVisibility(control, input);
-  }
-
-  function collectTeamOptions(datalist) {
-    teamFilterState.teams.clear();
-
-    document.querySelectorAll("#fixture-list .fixture-card").forEach((card) => {
-      [card.dataset.homeTeam, card.dataset.awayTeam]
-        .map(clean)
-        .filter(isSelectableTeam)
-        .forEach((team) => teamFilterState.teams.add(team));
-    });
-
-    datalist.innerHTML = [...teamFilterState.teams]
-      .sort((a, b) => a.localeCompare(b))
-      .map((team) => `<option value="${escapeHtml(team)}"></option>`)
-      .join("");
-  }
-
-  function syncTeamFilterVisibility(control, input) {
-    const isScotlandFilter = activeFixtureFilter() === "scotland";
-    control.hidden = isScotlandFilter;
-
-    if (isScotlandFilter) {
-      input.value = "";
-      teamFilterState.selected = "";
-      document.querySelector(".team-filter-empty")?.remove();
-    }
-  }
-
-  function activeFixtureFilter() {
-    return document.querySelector(".filter-button.is-active")?.dataset.filter || "all";
-  }
-
-  function applyTeamFixtureFilter() {
-    const selected = teamFilterState.selected;
-    const fixtureList = document.querySelector("#fixture-list");
-    const cards = [...document.querySelectorAll("#fixture-list .fixture-card")];
-    let visibleCount = 0;
-
-    document.querySelector(".team-filter-empty")?.remove();
-
-    cards.forEach((card) => {
-      const teams = [card.dataset.homeTeam, card.dataset.awayTeam].map(normalise);
-      const visible = !selected || teams.some((team) => team.includes(selected));
-      card.hidden = !visible;
-      if (visible) visibleCount += 1;
-    });
-
-    document.querySelectorAll("#fixture-list .fixture-day-group").forEach((group) => {
-      const groupCards = [...group.querySelectorAll(".fixture-card")];
-      const matchingCards = groupCards.filter((card) => !card.hidden);
-      const matchCount = selected ? matchingCards.length : groupCards.length;
-      const hasVisibleCards = matchCount > 0;
-      const countLabel = group.querySelector(".fixture-day-heading small");
-
-      group.hidden = !hasVisibleCards;
-
-      if (hasVisibleCards) {
-        group.open = selected ? true : group.dataset.day === todayKey();
-      }
-
-      if (countLabel) {
-        countLabel.textContent = `${matchCount} fixture${matchCount === 1 ? "" : "s"}`;
-      }
-    });
-
-    if (selected && fixtureList && cards.length && visibleCount === 0) {
-      const empty = document.createElement("div");
-      empty.className = "empty-state team-filter-empty";
-      empty.textContent = "No fixtures match that team search.";
-      fixtureList.append(empty);
-    }
-  }
-
-  function todayKey() {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: CONFIG.timeZone || "Europe/London",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).formatToParts(new Date());
-
-    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-    return `${values.year}-${values.month}-${values.day}`;
-  }
-
-  function isSelectableTeam(team) {
-    return team && !/\b(winner|runner|third|match|tbc|fixture|opponent|group\s+[a-l])\b/i.test(team);
-  }
 
   function rawMatchStatus(event) {
     return clean([
