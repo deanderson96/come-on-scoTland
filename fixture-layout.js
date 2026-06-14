@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v22";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v23";
   }
 
   const originalApplyData = window.applyData;
@@ -43,7 +43,6 @@
       <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(match.stage)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
         <div class="fixture-row-time">
           <span>${kickoffHour(match.kickoff)}</span>
-          <strong>${status}</strong>
         </div>
 
         <div class="fixture-row-main">
@@ -179,7 +178,7 @@
       day: "2-digit"
     }).formatToParts(date);
 
-    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value));
     return `${values.year}-${values.month}-${values.day}`;
   }
 })();
