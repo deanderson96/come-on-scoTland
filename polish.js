@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v26";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v29";
   }
 
   const teamFilterState = {
@@ -194,8 +194,21 @@
     });
 
     document.querySelectorAll("#fixture-list .fixture-day-group").forEach((group) => {
-      const hasVisibleCards = [...group.querySelectorAll(".fixture-card")].some((card) => !card.hidden);
+      const groupCards = [...group.querySelectorAll(".fixture-card")];
+      const matchingCards = groupCards.filter((card) => !card.hidden);
+      const matchCount = selected ? matchingCards.length : groupCards.length;
+      const hasVisibleCards = matchCount > 0;
+      const countLabel = group.querySelector(".fixture-day-heading small");
+
       group.hidden = !hasVisibleCards;
+
+      if (hasVisibleCards) {
+        group.open = selected ? true : group.dataset.day === todayKey();
+      }
+
+      if (countLabel) {
+        countLabel.textContent = `${matchCount} fixture${matchCount === 1 ? "" : "s"}`;
+      }
     });
 
     if (selected && fixtureList && cards.length && visibleCount === 0) {
@@ -204,6 +217,18 @@
       empty.textContent = "No fixtures match that team search.";
       fixtureList.append(empty);
     }
+  }
+
+  function todayKey() {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: CONFIG.timeZone || "Europe/London",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date());
+
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
   }
 
   function isSelectableTeam(team) {
