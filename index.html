@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="background.css" />
   <link rel="stylesheet" href="standings.css" />
   <link rel="stylesheet" href="polish.css" />
+  <link rel="stylesheet" href="fixture-layout.css" />
   <style>
     :focus-visible {
       outline: 3px solid var(--sky-300);
@@ -69,6 +70,7 @@
       </button>
 
       <ul class="nav-menu" id="nav-menu">
+        <li><a href="#today">Today</a></li>
         <li><a href="#fixtures">Fixtures</a></li>
         <li><a href="#groups">Groups</a></li>
         <li><a href="#knockout">Knockout</a></li>
@@ -189,6 +191,20 @@
           <strong>19 Jul • 8:00pm BST</strong>
           <p>Match 104 in New Jersey.</p>
         </article>
+      </div>
+    </section>
+
+    <section class="section today-fixtures-section" id="today" aria-labelledby="today-title">
+      <div class="shell section-heading">
+        <p class="eyebrow">Today</p>
+        <h2 id="today-title">Today’s fixtures</h2>
+        <p>Matches scheduled for today in Europe/London time. Select a fixture to expand details.</p>
+      </div>
+
+      <div class="shell">
+        <div class="fixture-list today-fixture-list" id="today-fixture-list" aria-label="Today's World Cup fixtures" aria-live="polite">
+          <div class="empty-state">Loading today’s fixtures…</div>
+        </div>
       </div>
     </section>
 
