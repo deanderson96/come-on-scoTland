@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v28";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v29";
   }
 
   const originalApplyData = window.applyData;
@@ -154,7 +154,8 @@
   }
 
   function displayGroup(value, match = {}) {
-    const stage = clean(value) || clean(match.group) || clean(match.stage);
+    const groupValue = clean(match.group);
+    const stage = clean(value) || groupValue || clean(match.stage);
     const groupMatch = stage.match(/Group\s+([A-L])/i);
 
     if (groupMatch) {
@@ -166,7 +167,9 @@
       .replace(/^World\s+Cup\s*[,\-–—:]?\s*/i, "")
       .trim();
 
-    return cleanedStage || clean(match.group) || clean(match.stage) || "Group stage";
+    if (groupValue) return groupValue;
+    if (cleanedStage) return cleanedStage;
+    return match.phase === "knockout" ? "Knockout" : "Group stage";
   }
 
   function kickoffHour(date) {
