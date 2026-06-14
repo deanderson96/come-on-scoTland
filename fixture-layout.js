@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v31";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v33";
   }
 
   const GROUP_TEAMS = {
@@ -41,6 +41,8 @@
     if (todayText) {
       todayText.textContent = "Matches scheduled for today in Europe/London time.";
     }
+
+    setupAnimatedFixtureDropdowns();
   });
 
   function renderGroupedFixtures(filter = "all") {
@@ -143,6 +145,80 @@
           </details>`;
       })
       .join("");
+  }
+
+  function setupAnimatedFixtureDropdowns() {
+    const fixtureList = document.querySelector("#fixture-list");
+    if (!fixtureList || fixtureList.dataset.animatedDropdowns === "true") return;
+
+    fixtureList.dataset.animatedDropdowns = "true";
+
+    fixtureList.addEventListener("click", (event) => {
+      const summary = event.target.closest(".fixture-day-heading");
+      if (!summary || !fixtureList.contains(summary)) return;
+
+      const details = summary.closest(".fixture-day-group");
+      const panel = details?.querySelector(".fixture-day-card");
+      if (!details || !panel || details.dataset.animating === "true") return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      event.preventDefault();
+      details.open ? animateClose(details, panel) : animateOpen(details, panel);
+    });
+  }
+
+  function animateOpen(details, panel) {
+    details.dataset.animating = "true";
+    details.open = true;
+    panel.style.height = "0px";
+    panel.style.opacity = "0";
+    panel.style.transform = "translateY(-10px) scale(0.985)";
+
+    const targetHeight = `${panel.scrollHeight}px`;
+    const animation = panel.animate(
+      [
+        { height: "0px", opacity: 0, transform: "translateY(-10px) scale(0.985)" },
+        { height: targetHeight, opacity: 1, transform: "translateY(0) scale(1)" }
+      ],
+      dropdownTiming()
+    );
+
+    animation.onfinish = () => finishDropdownAnimation(details, panel, true);
+    animation.oncancel = () => finishDropdownAnimation(details, panel, true);
+  }
+
+  function animateClose(details, panel) {
+    details.dataset.animating = "true";
+    const startHeight = `${panel.offsetHeight}px`;
+    panel.style.height = startHeight;
+    panel.style.opacity = "1";
+
+    const animation = panel.animate(
+      [
+        { height: startHeight, opacity: 1, transform: "translateY(0) scale(1)" },
+        { height: "0px", opacity: 0, transform: "translateY(-10px) scale(0.985)" }
+      ],
+      dropdownTiming()
+    );
+
+    animation.onfinish = () => finishDropdownAnimation(details, panel, false);
+    animation.oncancel = () => finishDropdownAnimation(details, panel, false);
+  }
+
+  function finishDropdownAnimation(details, panel, open) {
+    details.open = open;
+    delete details.dataset.animating;
+    panel.style.height = "";
+    panel.style.opacity = "";
+    panel.style.transform = "";
+  }
+
+  function dropdownTiming() {
+    return {
+      duration: 360,
+      easing: "cubic-bezier(.2,.85,.2,1)",
+      fill: "both"
+    };
   }
 
   function groupFixturesByDay(fixtures) {
