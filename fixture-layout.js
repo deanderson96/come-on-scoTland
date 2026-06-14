@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v36";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v39";
   }
 
   const originalApplyData = window.applyData;
@@ -20,11 +20,15 @@
       todayText.textContent = "Matches scheduled for today in Europe/London time.";
     }
 
+    setupTournamentProgress();
     setupAnimatedFixtureDropdowns();
+    updateTournamentProgress(state?.fixtures || []);
   });
 
   function renderGroupedFixtures(filter = "all") {
     if (!els.fixtureList) return;
+
+    updateTournamentProgress(state.fixtures || []);
 
     const fixtures = state.fixtures.filter((match) => {
       if (filter === "scotland") return isScotland(match);
@@ -80,6 +84,7 @@
     window.applyData = function applyDataWithTodaysFixtures(data) {
       originalApplyData(data);
       renderTodaysFixtures(data);
+      updateTournamentProgress(state?.fixtures || []);
     };
   }
 
@@ -123,6 +128,161 @@
           </details>`;
       })
       .join("");
+  }
+
+  function setupTournamentProgress() {
+    if (document.querySelector("#fixtures-progress")) return;
+
+    installTournamentProgressStyles();
+
+    const toolbar = document.querySelector("#fixtures .toolbar");
+    if (!toolbar) return;
+
+    const progress = document.createElement("div");
+    progress.id = "fixtures-progress";
+    progress.className = "fixtures-progress";
+    progress.innerHTML = `
+      <div class="fixtures-progress__header">
+        <span>Fixture completion</span>
+        <strong data-progress-count>0 / 0 finished</strong>
+      </div>
+      <div class="fixtures-progress__bar" role="progressbar" aria-label="Tournament fixture completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span class="fixtures-progress__fill" style="width: 0%"></span>
+        <strong class="fixtures-progress__percent">0%</strong>
+      </div>`;
+
+    toolbar.insertAdjacentElement("afterend", progress);
+  }
+
+  function installTournamentProgressStyles() {
+    if (document.querySelector("#fixtures-progress-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "fixtures-progress-styles";
+    style.textContent = `
+      .fixtures-progress {
+        width: min(var(--shell), calc(100% - 2rem));
+        margin: -0.45rem auto 1.45rem;
+        padding: 0.92rem;
+        border: 1px solid rgba(7, 26, 61, 0.12);
+        border-radius: 22px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(251, 247, 234, 0.76)),
+          rgba(255, 255, 255, 0.86);
+        box-shadow: 0 18px 44px rgba(7, 26, 61, 0.09);
+      }
+
+      .fixtures-progress__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.62rem;
+        color: rgba(7, 26, 61, 0.66);
+        font-size: 0.72rem;
+        font-weight: 950;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .fixtures-progress__header strong {
+        color: var(--navy-900);
+        letter-spacing: 0.04em;
+      }
+
+      .fixtures-progress__bar {
+        position: relative;
+        min-height: 2.05rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(7, 26, 61, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(7, 26, 61, 0.08);
+      }
+
+      .fixtures-progress__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        min-width: 2.05rem;
+        border-radius: inherit;
+        background:
+          linear-gradient(90deg, var(--navy-800), var(--sky-300)),
+          var(--sky-300);
+        box-shadow: 0 0 24px rgba(141, 216, 255, 0.34);
+        transition: width 520ms cubic-bezier(.2,.85,.2,1);
+      }
+
+      .fixtures-progress__percent {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 950;
+        letter-spacing: 0.08em;
+        text-shadow: 0 1px 8px rgba(3, 11, 29, 0.55);
+      }
+
+      html[data-theme="dark"] .fixtures-progress {
+        border-color: rgba(185, 232, 255, 0.16);
+        background:
+          linear-gradient(135deg, rgba(141, 216, 255, 0.09), transparent 44%),
+          rgba(8, 21, 45, 0.9);
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.26);
+      }
+
+      html[data-theme="dark"] .fixtures-progress__header {
+        color: rgba(237, 247, 255, 0.72);
+      }
+
+      html[data-theme="dark"] .fixtures-progress__header strong {
+        color: #ffffff;
+      }
+
+      html[data-theme="dark"] .fixtures-progress__bar {
+        background: rgba(237, 247, 255, 0.1);
+        box-shadow: inset 0 0 0 1px rgba(185, 232, 255, 0.13);
+      }
+
+      @media (max-width: 520px) {
+        .fixtures-progress {
+          margin-top: -0.1rem;
+        }
+
+        .fixtures-progress__header {
+          display: grid;
+          gap: 0.3rem;
+        }
+      }
+    `;
+
+    document.head.append(style);
+  }
+
+  function updateTournamentProgress(fixtures) {
+    const progress = document.querySelector("#fixtures-progress");
+    if (!progress) return;
+
+    const matches = Array.isArray(fixtures) ? fixtures : [];
+    const total = matches.length;
+    const finished = matches.filter(isFinishedFixture).length;
+    const percent = total ? Math.round((finished / total) * 100) : 0;
+
+    const count = progress.querySelector("[data-progress-count]");
+    const bar = progress.querySelector(".fixtures-progress__bar");
+    const fill = progress.querySelector(".fixtures-progress__fill");
+    const label = progress.querySelector(".fixtures-progress__percent");
+
+    if (count) count.textContent = `${finished} / ${total} finished`;
+    if (bar) bar.setAttribute("aria-valuenow", String(percent));
+    if (fill) fill.style.width = `${percent}%`;
+    if (label) label.textContent = `${percent}%`;
+  }
+
+  function isFinishedFixture(match) {
+    const status = clean(match?.status);
+    if (typeof isFinishedStatus === "function" && isFinishedStatus(status)) return true;
+    return /^(FT|RESULT)$/i.test(status);
   }
 
   function setupAnimatedFixtureDropdowns() {
