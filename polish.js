@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v22";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v26";
   }
 
   const teamFilterState = {
@@ -148,7 +148,9 @@
   }
 
   function collectTeamOptions(datalist) {
-    document.querySelectorAll(".fixture-card").forEach((card) => {
+    teamFilterState.teams.clear();
+
+    document.querySelectorAll("#fixture-list .fixture-card").forEach((card) => {
       [card.dataset.homeTeam, card.dataset.awayTeam]
         .map(clean)
         .filter(isSelectableTeam)
@@ -178,8 +180,8 @@
 
   function applyTeamFixtureFilter() {
     const selected = teamFilterState.selected;
-    const cards = [...document.querySelectorAll(".fixture-card")];
     const fixtureList = document.querySelector("#fixture-list");
+    const cards = [...document.querySelectorAll("#fixture-list .fixture-card")];
     let visibleCount = 0;
 
     document.querySelector(".team-filter-empty")?.remove();
@@ -189,6 +191,11 @@
       const visible = !selected || teams.some((team) => team.includes(selected));
       card.hidden = !visible;
       if (visible) visibleCount += 1;
+    });
+
+    document.querySelectorAll("#fixture-list .fixture-day-group").forEach((group) => {
+      const hasVisibleCards = [...group.querySelectorAll(".fixture-card")].some((card) => !card.hidden);
+      group.hidden = !hasVisibleCards;
     });
 
     if (selected && fixtureList && cards.length && visibleCount === 0) {
