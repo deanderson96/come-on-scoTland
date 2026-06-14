@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v21";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v22";
   }
 
   const originalApplyData = window.applyData;
@@ -36,25 +36,18 @@
     const liveIndicator = match.isLive
       ? `<span class="fixture-live-indicator" aria-label="Live match"><span aria-hidden="true"></span>Live</span>`
       : "";
-    const panelId = `match-details-${localSlugify(match.id)}`;
     const scoreParts = splitScore(match.score);
     const status = escapeHtml(match.status);
 
     return `
-      <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" role="button" tabindex="0" aria-expanded="false" aria-controls="${panelId}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(match.stage)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
+      <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(match.stage)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
         <div class="fixture-row-time">
           <span>${kickoffHour(match.kickoff)}</span>
           <strong>${status}</strong>
         </div>
 
         <div class="fixture-row-main">
-          <div class="fixture-row-meta">
-            <span aria-hidden="true">🏆</span>
-            <strong>Football</strong>
-            <small>›</small>
-            <span>FIFA World Cup${match.stage ? `, ${escapeHtml(match.stage)}` : ""}</span>
-          </div>
-
+          <span class="fixture-row-stage">${escapeHtml(match.stage || "Fixture")}</span>
           <div class="fixture-row-teams">
             <div class="fixture-row-team ${scoreParts.home > scoreParts.away ? "is-leading" : ""}">
               <span>${escapeHtml(match.home)}</span>
@@ -80,10 +73,6 @@
       renderTodaysFixtures(data);
     };
   }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setupTodaysFixtureInteractions();
-  });
 
   function renderTodaysFixtures(data) {
     const list = document.querySelector("#today-fixture-list");
@@ -122,49 +111,6 @@
       groups.get(key).push(match);
       return groups;
     }, new Map());
-  }
-
-  function setupTodaysFixtureInteractions() {
-    const list = document.querySelector("#today-fixture-list");
-    if (!list) return;
-
-    list.addEventListener("click", (event) => {
-      const card = event.target.closest(".fixture-card");
-      if (!card || card.hidden) return;
-      openFixtureInMainList(card);
-    });
-
-    list.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-
-      const card = event.target.closest(".fixture-card");
-      if (!card || card.hidden) return;
-
-      event.preventDefault();
-      openFixtureInMainList(card);
-    });
-  }
-
-  function openFixtureInMainList(card) {
-    const id = clean(card.dataset.eventId);
-    if (!id) return;
-
-    const allButton = document.querySelector(".filter-button[data-filter='all']");
-    if (allButton && !allButton.classList.contains("is-active")) {
-      allButton.click();
-    }
-
-    window.requestAnimationFrame(() => {
-      const target = [...document.querySelectorAll("#fixture-list .fixture-card")]
-        .find((fixture) => clean(fixture.dataset.eventId) === id);
-
-      if (!target) return;
-
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      if (target.getAttribute("aria-expanded") !== "true") {
-        target.click();
-      }
-    });
   }
 
   function splitScore(value) {
@@ -235,9 +181,5 @@
 
     const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
     return `${values.year}-${values.month}-${values.day}`;
-  }
-
-  function localSlugify(value) {
-    return String(value || "match").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-|-$/g, "") || "match";
   }
 })();
