@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v27";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v28";
   }
 
   const originalApplyData = window.applyData;
@@ -45,7 +45,7 @@
       : "";
     const scoreParts = splitScore(match.score);
     const status = escapeHtml(match.status);
-    const group = displayGroup(match.stage);
+    const group = displayGroup(match.group || match.stage, match);
 
     return `
       <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(group)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
@@ -153,18 +153,20 @@
     };
   }
 
-  function displayGroup(value) {
-    const stage = clean(value) || "Fixture";
+  function displayGroup(value, match = {}) {
+    const stage = clean(value) || clean(match.group) || clean(match.stage);
     const groupMatch = stage.match(/Group\s+([A-L])/i);
 
     if (groupMatch) {
       return `Group ${groupMatch[1].toUpperCase()}`;
     }
 
-    return stage
+    const cleanedStage = stage
       .replace(/FIFA\s+World\s+Cup\s*[,\-–—:]?\s*/i, "")
       .replace(/^World\s+Cup\s*[,\-–—:]?\s*/i, "")
-      .trim() || "Fixture";
+      .trim();
+
+    return cleanedStage || clean(match.group) || clean(match.stage) || "Group stage";
   }
 
   function kickoffHour(date) {
