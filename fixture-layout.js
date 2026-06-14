@@ -2,8 +2,30 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v29";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v31";
   }
+
+  const GROUP_TEAMS = {
+    A: ["Mexico", "South Africa", "South Korea", "Czechia"],
+    B: ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+    C: ["Brazil", "Morocco", "Haiti", "Scotland"],
+    D: ["United States", "Paraguay", "Australia", "Turkey"],
+    E: ["Germany", "Curacao", "Curaçao", "Ivory Coast", "Ecuador"],
+    F: ["Netherlands", "Japan", "Sweden", "Tunisia"],
+    G: ["Belgium", "Egypt", "Iran", "New Zealand"],
+    H: ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+    I: ["France", "Senegal", "Iraq", "Norway"],
+    J: ["Argentina", "Algeria", "Austria", "Jordan"],
+    K: ["Portugal", "DR Congo", "Democratic Republic of the Congo", "Uzbekistan", "Colombia"],
+    L: ["England", "Croatia", "Ghana", "Panama"]
+  };
+
+  const TEAM_TO_GROUP = Object.entries(GROUP_TEAMS).reduce((lookup, [group, teams]) => {
+    teams.forEach((team) => {
+      lookup.set(normaliseTeamName(team), `Group ${group}`);
+    });
+    return lookup;
+  }, new Map());
 
   const originalApplyData = window.applyData;
 
@@ -154,6 +176,7 @@
   }
 
   function displayGroup(value, match = {}) {
+    const inferredGroup = inferGroupFromTeams(match.home, match.away);
     const groupValue = clean(match.group);
     const stage = clean(value) || groupValue || clean(match.stage);
     const groupMatch = stage.match(/Group\s+([A-L])/i);
@@ -162,14 +185,37 @@
       return `Group ${groupMatch[1].toUpperCase()}`;
     }
 
+    if (inferredGroup && /group\s*stage|fifa\s+world\s+cup|world\s+cup|fixture/i.test(stage)) {
+      return inferredGroup;
+    }
+
     const cleanedStage = stage
       .replace(/FIFA\s+World\s+Cup\s*[,\-–—:]?\s*/i, "")
       .replace(/^World\s+Cup\s*[,\-–—:]?\s*/i, "")
       .trim();
 
     if (groupValue) return groupValue;
-    if (cleanedStage) return cleanedStage;
-    return match.phase === "knockout" ? "Knockout" : "Group stage";
+    if (cleanedStage && !/^group\s*stage$/i.test(cleanedStage)) return cleanedStage;
+    return inferredGroup || (match.phase === "knockout" ? "Knockout" : "Group stage");
+  }
+
+  function inferGroupFromTeams(home, away) {
+    const homeGroup = TEAM_TO_GROUP.get(normaliseTeamName(home));
+    const awayGroup = TEAM_TO_GROUP.get(normaliseTeamName(away));
+
+    if (homeGroup && homeGroup === awayGroup) return homeGroup;
+    return homeGroup || awayGroup || "";
+  }
+
+  function normaliseTeamName(value) {
+    return clean(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/&/g, "and")
+      .replace(/\bthe\b/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   }
 
   function kickoffHour(date) {
