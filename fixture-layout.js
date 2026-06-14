@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v26";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v27";
   }
 
   const originalApplyData = window.applyData;
@@ -96,7 +96,10 @@
       return;
     }
 
-    list.innerHTML = renderFixtureGroups(fixtures, { compactHeading: true, openAll: true });
+    list.innerHTML = `
+      <div class="fixture-day-card today-fixture-card">
+        ${fixtures.map(window.renderFixtureCard).join("")}
+      </div>`;
   }
 
   function renderFixtureGroups(fixtures, options = {}) {
