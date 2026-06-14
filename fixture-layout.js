@@ -2,7 +2,7 @@
   "use strict";
 
   if (typeof CONFIG === "object") {
-    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v24";
+    CONFIG.cacheKey = "scotland-2026-world-cup-cache-v25";
   }
 
   const originalApplyData = window.applyData;
@@ -38,15 +38,16 @@
       : "";
     const scoreParts = splitScore(match.score);
     const status = escapeHtml(match.status);
+    const group = displayGroup(match.stage);
 
     return `
-      <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(match.stage)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
+      <article class="fixture-card fixture-row is-compact ${isScotland(match) ? "is-scotland" : ""} ${match.isLive ? "is-live" : ""}" data-event-id="${escapeHtml(match.id)}" data-home-team="${escapeHtml(match.home)}" data-away-team="${escapeHtml(match.away)}" data-stage="${escapeHtml(group)}" data-venue="${escapeHtml(match.venue)}" data-kickoff="${match.kickoff ? match.kickoff.toISOString() : ""}" data-status="${status}" data-score="${escapeHtml(match.score || "")}">
         <div class="fixture-row-time">
           <span>${kickoffHour(match.kickoff)}</span>
         </div>
 
         <div class="fixture-row-main">
-          <span class="fixture-row-stage">${escapeHtml(match.stage || "Fixture")}</span>
+          <span class="fixture-row-stage">${escapeHtml(group)}</span>
           <div class="fixture-row-teams">
             <div class="fixture-row-team ${scoreParts.home > scoreParts.away ? "is-leading" : ""}">
               <span>${escapeHtml(match.home)}</span>
@@ -140,6 +141,20 @@
       homeText: match[1],
       awayText: match[2]
     };
+  }
+
+  function displayGroup(value) {
+    const stage = clean(value) || "Fixture";
+    const groupMatch = stage.match(/Group\s+([A-L])/i);
+
+    if (groupMatch) {
+      return `Group ${groupMatch[1].toUpperCase()}`;
+    }
+
+    return stage
+      .replace(/FIFA\s+World\s+Cup\s*[,\-–—:]?\s*/i, "")
+      .replace(/^World\s+Cup\s*[,\-–—:]?\s*/i, "")
+      .trim() || "Fixture";
   }
 
   function kickoffHour(date) {
