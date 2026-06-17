@@ -32,7 +32,8 @@
     panel.setAttribute("aria-label", "Tournament statistics");
     panel.innerHTML = statCardsMarkup({
       totalGoals: 0,
-      scoredMatches: 0,
+      scorelines: 0,
+      matchesWithGoals: 0,
       finishedMatches: 0,
       liveMatches: 0,
       goalsPerMatch: "0.00"
@@ -46,18 +47,20 @@
     if (!panel) return;
 
     const matches = Array.isArray(fixtures) ? fixtures : [];
-    const scored = matches
+    const scorelines = matches
       .map((match) => ({ match, score: parseScore(match.score) }))
       .filter((item) => item.score);
+    const matchesWithGoals = scorelines.filter((item) => item.score.home + item.score.away > 0);
 
-    const totalGoals = scored.reduce((total, item) => total + item.score.home + item.score.away, 0);
+    const totalGoals = scorelines.reduce((total, item) => total + item.score.home + item.score.away, 0);
     const finishedMatches = matches.filter(isFinishedFixture).length;
     const liveMatches = matches.filter(isLiveFixture).length;
-    const goalsPerMatch = scored.length ? (totalGoals / scored.length).toFixed(2) : "0.00";
+    const goalsPerMatch = scorelines.length ? (totalGoals / scorelines.length).toFixed(2) : "0.00";
 
     panel.innerHTML = statCardsMarkup({
       totalGoals,
-      scoredMatches: scored.length,
+      scorelines: scorelines.length,
+      matchesWithGoals: matchesWithGoals.length,
       finishedMatches,
       liveMatches,
       goalsPerMatch
@@ -69,12 +72,12 @@
       <article class="tournament-stat-card">
         <span>Total goals</span>
         <strong>${stats.totalGoals}</strong>
-        <small>Across matches with a score</small>
+        <small>Across matches with a scoreline</small>
       </article>
       <article class="tournament-stat-card">
-        <span>Scored matches</span>
-        <strong>${stats.scoredMatches}</strong>
-        <small>Fixtures currently showing a score</small>
+        <span>Matches with goals</span>
+        <strong>${stats.matchesWithGoals}</strong>
+        <small>Excludes 0–0 scorelines</small>
       </article>
       <article class="tournament-stat-card">
         <span>Finished</span>
@@ -89,7 +92,7 @@
       <article class="tournament-stat-card">
         <span>Goals/match</span>
         <strong>${stats.goalsPerMatch}</strong>
-        <small>Average from scored matches</small>
+        <small>Average from all scorelines, including 0–0</small>
       </article>`;
   }
 
