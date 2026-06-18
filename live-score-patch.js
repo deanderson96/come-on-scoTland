@@ -89,6 +89,8 @@
     return originalScore ? originalScore(event) : "";
   };
 
+  installMatchStatusGuard();
+
   if (originalUniqueEvents) {
     window.uniqueEvents = uniqueEvents = function uniqueEventsPreferScored(events) {
       const byKey = new Map();
@@ -108,6 +110,65 @@
 
       return [...byKey.values()];
     };
+  }
+
+  function installMatchStatusGuard() {
+    let guardedStatus = guardMatchStatus(typeof window.matchStatus === "function" ? window.matchStatus : null);
+
+    try {
+      Object.defineProperty(window, "matchStatus", {
+        configurable: true,
+        get() {
+          return guardedStatus;
+        },
+        set(nextStatus) {
+          guardedStatus = guardMatchStatus(nextStatus);
+        }
+      });
+    } catch {
+      window.matchStatus = guardedStatus;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      window.matchStatus = guardMatchStatus(window.matchStatus);
+    });
+  }
+
+  function guardMatchStatus(nextStatus) {
+    const fallback = typeof nextStatus === "function" ? nextStatus : null;
+
+    return function guardedMatchStatus(event, matchScore) {
+      const apiStatus = rawStatusText(event);
+      const scoreline = matchScore || score(event);
+
+      if (isExplicitFinishedStatus(apiStatus)) return "FT";
+      if (isExplicitLiveStatus(apiStatus)) return fallback ? fallback(event, matchScore) : "1H";
+      if (scoreline) return "FT";
+
+      return fallback ? fallback(event, matchScore) : "NS";
+    };
+  }
+
+  function rawStatusText(event) {
+    return [
+      event?.strStatus,
+      event?.strProgress,
+      event?.strLive,
+      event?.status,
+      event?.strClock,
+      event?.strTimeLine,
+      event?.strPeriod
+    ].filter(Boolean).join(" ").toLowerCase();
+  }
+
+  function isExplicitFinishedStatus(value) {
+    return /^(ft|full time|full-time|finished|match finished|ended|after extra time|aet|after penalties|ap)$/i.test(cleanText(value)) ||
+      /full.?time|finished|match ended|after extra time|after penalties|result/i.test(value);
+  }
+
+  function isExplicitLiveStatus(value) {
+    return /^(live|in play|in-play|playing|1h|2h|ht|et|et1h|et2h|pen|pens|penalties)$/i.test(cleanText(value)) ||
+      /\blive\b|in progress|in-play|in play|first half|second half|half.?time|extra time|penalt|shootout/i.test(value);
   }
 
   function richerEvent(a, b) {
